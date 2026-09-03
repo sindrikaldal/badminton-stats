@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: badd-boys-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: badd
+      POSTGRES_PASSWORD: badd
+      POSTGRES_DB: badd_boys
+    # 5433 on purpose: 5432 is taken by an unrelated stack on this machine.
+    ports:
+      - "5433:5432"
+    volumes:
+      - badd-boys-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U badd -d badd_boys"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  badd-boys-pgdata:

@@ -1,0 +1,220 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { GATE_COOKIE } from "@/lib/gate";
+import * as repo from "@/lib/repo";
+
+function revalidateAll() {
+  revalidatePath("/", "layout");
+}
+
+export type ActionResult = { ok: true } | { ok: false; error: string };
+
+/* -------------------------------------------------------------- gate ---- */
+
+export async function enterGroupCode(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const code = String(formData.get("code") ?? "").trim();
+  const expected = process.env.GROUP_CODE;
+
+  if (!expected) return { ok: false, error: "Hópkóði er ekki uppsettur." };
+  if (code.toLowerCase() !== expected.toLowerCase()) {
+    return { ok: false, error: "Rangur kóði. Prófaðu aftur." };
+  }
+
+  const store = await cookies();
+  store.set(GATE_COOKIE, "ok", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    // A whole winter, so nobody re-types the code every week.
+    maxAge: 60 * 60 * 24 * 365,
+    path: "/",
+  });
+
+  redirect(String(formData.get("naest") || "/"));
+}
+
+/* ------------------------------------------------------------ players ---- */
+
+const playerSchema = z.object({
+  name: z.string().trim().min(1, "Nafn vantar.").max(60),
+  isGuest: z.boolean().default(false),
+});
+
+/**
+ * Called directly rather than as a form action: the roster picker that uses it
+ * already sits inside a form, and forms cannot nest.
+ */
+export async function addPlayer(input: {
+  name: string;
+  isGuest: boolean;
+}): Promise<ActionResult & { playerId?: number }> {
+  const parsed = playerSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0].message };
+  }
+
+  const player = await repo.createPlayer(parsed.data);
+  revalidateAll();
+  return { ok: true, playerId: player.id };
+}
+
+/* ------------------------------------------------------------ seasons ---- */
+
+export async function startSeason(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const name = String(formData.get("name") ?? "").trim();
+  const startedOn = String(formData.get("startedOn") ?? "").trim();
+  if (!name) return { ok: false, error: "Nafn tímabils vantar." };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startedOn)) {
+    return { ok: false, error: "Ógild dagsetning." };
+  }
+
+  await repo.createSeason({ name, startedOn });
+  revalidateAll();
+  return { ok: true };
+}
+
+/* ----------------------------------------------------------- sessions ---- */
+
+export async function startSession(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const playedOn = String(formData.get("playedOn") ?? "").trim();
+  const attendees = formData
+    .getAll("attendee")
+    .map((v) => Number(v))
+    .filter((n) => Number.isInteger(n) && n > 0);
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(playedOn)) {
+    return { ok: false, error: "Ógild dagsetning." };
+  }
+  if (attendees.length < 4) {
+    return { ok: false, error: "Það þarf a.m.k. fjóra til að spila." };
+  }
+
+  const season = await repo.getActiveSeason();
+  if (!season) return { ok: false, error: "Ekkert virkt tímabil." };
+
+  const session = await repo.createSession({
+    seasonId: season.id,
+    playedOn,
+    attendees,
+  });
+  revalidateAll();
+  redirect(`/?kvold=${session.id}`);
+}
+
+export async function updateAttendees(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const sessionId = Number(formData.get("sessionId"));
+  const attendees = formData
+    .getAll("attendee")
+    .map((v) => Number(v))
+    .filter((n) => Number.isInteger(n) && n > 0);
+
+  if (!sessionId) return { ok: false, error: "Kvöld fannst ekki." };
+
+  await repo.setAttendees(sessionId, attendees);
+  revalidateAll();
+  return { ok: true };
+}
+
+export async function removeSession(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const sessionId = Number(formData.get("sessionId"));
+  if (!sessionId) return { ok: false, error: "Kvöld fannst ekki." };
+  await repo.deleteSession(sessionId);
+  revalidateAll();
+  redirect("/leikir");
+}
+
+/* ------------------------------------------------------------ matches ---- */
+
+const teamSchema = z.tuple([z.number().int().positive(), z.number().int().positive()]);
+
+const matchSchema = z
+  .object({
+    teamA: teamSchema,
+    teamB: teamSchema,
+    scoreA: z.number().int().min(0).max(99),
+    scoreB: z.number().int().min(0).max(99),
+  })
+  .refine((m) => new Set([...m.teamA, ...m.teamB]).size === 4, {
+    message: "Sami leikmaður má ekki vera tvisvar í leiknum.",
+  })
+  .refine((m) => m.scoreA !== m.scoreB, { message: "Leikur getur ekki endað jafn." })
+  .refine((m) => Math.max(m.scoreA, m.scoreB) >= 11, {
+    message: "Sigurvegari þarf a.m.k. 11 stig.",
+  })
+  .refine((m) => Math.abs(m.scoreA - m.scoreB) >= 2, {
+    message: "Það þarf tveggja stiga mun.",
+  });
+
+function readMatch(formData: FormData) {
+  return matchSchema.safeParse({
+    teamA: [Number(formData.get("a1")), Number(formData.get("a2"))],
+    teamB: [Number(formData.get("b1")), Number(formData.get("b2"))],
+    scoreA: Number(formData.get("scoreA")),
+    scoreB: Number(formData.get("scoreB")),
+  });
+}
+
+export async function logMatch(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const sessionId = Number(formData.get("sessionId"));
+  if (!sessionId) return { ok: false, error: "Kvöld fannst ekki." };
+
+  const parsed = readMatch(formData);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0].message };
+  }
+
+  const match = await repo.addMatch({ sessionId, ...parsed.data });
+  revalidateAll();
+  // The session page decides whether this completed a three-in-a-row.
+  redirect(`/?kvold=${sessionId}&nyr=${match.id}`);
+}
+
+export async function editMatch(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const matchId = Number(formData.get("matchId"));
+  if (!matchId) return { ok: false, error: "Leikur fannst ekki." };
+
+  const parsed = readMatch(formData);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0].message };
+  }
+
+  await repo.updateMatch(matchId, parsed.data);
+  revalidateAll();
+  return { ok: true };
+}
+
+export async function removeMatch(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const matchId = Number(formData.get("matchId"));
+  if (!matchId) return { ok: false, error: "Leikur fannst ekki." };
+  await repo.deleteMatch(matchId);
+  revalidateAll();
+  return { ok: true };
+}
