@@ -26,6 +26,10 @@ function connect(): postgres.Sql {
     max: 10,
     // Managed Postgres (Neon, Supabase) requires TLS; the local container has none.
     ssl: isLocal ? false : "require",
+    // Managed pooled endpoints front Postgres with PgBouncer in transaction
+    // mode, where named prepared statements break. Locally there is no pooler,
+    // so keep them.
+    prepare: isLocal,
     // Serverless platforms drop idle sockets silently; recycle before they rot.
     idle_timeout: 20,
     max_lifetime: 60 * 30,
