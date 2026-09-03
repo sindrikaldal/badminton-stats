@@ -62,6 +62,42 @@ function initialsOf(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+/**
+ * How much history a player is tangled up in. Anyone who has played a match
+ * cannot be removed without destroying that match, so the UI offers archiving
+ * instead -- and this is what it branches on.
+ */
+export async function getPlayerUsage(
+  playerId: PlayerId,
+): Promise<{ matches: number; sessions: number }> {
+  const [row] = await sql<{ matches: number; sessions: number }[]>`
+    SELECT
+      (SELECT count(*) FROM matches
+        WHERE a1 = ${playerId} OR a2 = ${playerId}
+           OR b1 = ${playerId} OR b2 = ${playerId})::int AS matches,
+      (SELECT count(*) FROM session_attendees
+        WHERE player_id = ${playerId})::int AS sessions
+  `;
+  return row;
+}
+
+/**
+ * Only ever called for a player with no matches. Their attendance rows cascade;
+ * the foreign keys on `matches` deliberately do not, so a player with history
+ * makes this fail rather than quietly shredding results.
+ */
+export async function deletePlayer(playerId: PlayerId): Promise<void> {
+  await sql`DELETE FROM players WHERE id = ${playerId}`;
+}
+
+/** Archiving keeps every past result while dropping them from the pickers. */
+export async function setPlayerActive(
+  playerId: PlayerId,
+  isActive: boolean,
+): Promise<void> {
+  await sql`UPDATE players SET is_active = ${isActive} WHERE id = ${playerId}`;
+}
+
 export async function getActiveSeason(): Promise<Season | null> {
   const [season] = await sql<Season[]>`
     SELECT id, name, started_on, ended_on

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Avatar, avatarColor } from "@/components/Avatar";
 import { MatchList } from "@/components/MatchList";
+import { PlayerAdmin } from "@/components/PlayerAdmin";
 import { EmptyState, SectionTitle, Shell } from "@/components/Shell";
 import {
   chemistryFor,
@@ -28,9 +29,12 @@ export default async function PlayerPage({
   const [{ id }, { timabil }] = await Promise.all([params, searchParams]);
   const playerId = Number(id);
 
-  const [players, seasons] = await Promise.all([
+  const [players, seasons, usage] = await Promise.all([
     repo.getPlayers(),
     repo.getSeasons(),
+    // Counted across every season, not just the one on screen -- whether a
+    // player can be deleted has nothing to do with which season you filtered.
+    repo.getPlayerUsage(playerId),
   ]);
 
   const player = players.find((p) => p.id === playerId);
@@ -89,6 +93,7 @@ export default async function PlayerPage({
             <h1 className="display truncate text-3xl text-ink">{player.name}</h1>
             <p className="text-xs text-ink-faint">
               {player.isGuest ? "Gestur" : "Fastamaður"}
+              {!player.isActive ? " · í geymslu" : ""}
             </p>
           </div>
         </div>
@@ -140,7 +145,9 @@ export default async function PlayerPage({
         <div className="mt-4">
           <EmptyState title="Engir leikir skráðir á þessu tímabili" />
         </div>
-      ) : (
+      ) : null}
+
+      {!mine || mine.played === 0 ? null : (
         <>
           <SectionTitle>Tölfræði</SectionTitle>
           <div className="grid grid-cols-2 gap-2">
@@ -215,6 +222,8 @@ export default async function PlayerPage({
           />
         </>
       )}
+
+      <PlayerAdmin player={player} matchCount={usage.matches} />
     </Shell>
   );
 }

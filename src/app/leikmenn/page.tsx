@@ -28,8 +28,16 @@ export default async function PlayersPage() {
   const statsById = new Map(stats.players.map((s) => [s.playerId, s]));
   const ordered = rankedLeaderboard(stats.players);
 
-  const regulars = ordered.filter((s) => !players.find((p) => p.id === s.playerId)?.isGuest);
-  const guests = ordered.filter((s) => players.find((p) => p.id === s.playerId)?.isGuest);
+  const byId = new Map(players.map((p) => [p.id, p]));
+  const inGroup = (test: (player: (typeof players)[number]) => boolean) =>
+    ordered.flatMap((row) => {
+      const player = byId.get(row.playerId);
+      return player && test(player) ? [{ row, player }] : [];
+    });
+
+  const regulars = inGroup((p) => p.isActive && !p.isGuest);
+  const guests = inGroup((p) => p.isActive && p.isGuest);
+  const archived = inGroup((p) => !p.isActive);
 
   return (
     <Shell status={season?.name}>
@@ -42,10 +50,10 @@ export default async function PlayersPage() {
           </EmptyState>
         ) : (
           <ul className="space-y-2">
-            {regulars.map((row) => (
+            {regulars.map(({ row, player }) => (
               <PlayerRow
                 key={row.playerId}
-                player={players.find((p) => p.id === row.playerId)!}
+                player={player}
                 stats={statsById.get(row.playerId)}
               />
             ))}
@@ -56,10 +64,28 @@ export default async function PlayersPage() {
           <>
             <SectionTitle>Gestir</SectionTitle>
             <ul className="space-y-2">
-              {guests.map((row) => (
+              {guests.map(({ row, player }) => (
                 <PlayerRow
                   key={row.playerId}
-                  player={players.find((p) => p.id === row.playerId)!}
+                  player={player}
+                  stats={statsById.get(row.playerId)}
+                />
+              ))}
+            </ul>
+          </>
+        ) : null}
+
+        {archived.length > 0 ? (
+          <>
+            <SectionTitle>Í geymslu</SectionTitle>
+            <p className="mb-2 text-xs text-ink-faint">
+              Birtast ekki þegar þú velur leikmenn. Úrslitin þeirra standa.
+            </p>
+            <ul className="space-y-2 opacity-60">
+              {archived.map(({ row, player }) => (
+                <PlayerRow
+                  key={row.playerId}
+                  player={player}
                   stats={statsById.get(row.playerId)}
                 />
               ))}

@@ -65,6 +65,44 @@ export async function addPlayer(input: {
   return { ok: true, playerId: player.id };
 }
 
+/**
+ * Removes a player outright. Refused once they appear in any match: the match
+ * would have to go too, and losing an evening's results to tidy up a roster is
+ * never the trade anyone wants. Archive them instead.
+ */
+export async function deletePlayer(
+  playerId: number,
+): Promise<ActionResult> {
+  if (!Number.isInteger(playerId) || playerId <= 0) {
+    return { ok: false, error: "Leikmaður fannst ekki." };
+  }
+
+  const usage = await repo.getPlayerUsage(playerId);
+  if (usage.matches > 0) {
+    return {
+      ok: false,
+      error: `Þessi leikmaður hefur spilað ${usage.matches} leiki. Ekki er hægt að eyða honum án þess að eyða leikjunum — geymdu hann í staðinn.`,
+    };
+  }
+
+  await repo.deletePlayer(playerId);
+  revalidateAll();
+  return { ok: true };
+}
+
+/** Hides a player from every picker without touching their history. */
+export async function setPlayerActive(
+  playerId: number,
+  isActive: boolean,
+): Promise<ActionResult> {
+  if (!Number.isInteger(playerId) || playerId <= 0) {
+    return { ok: false, error: "Leikmaður fannst ekki." };
+  }
+  await repo.setPlayerActive(playerId, isActive);
+  revalidateAll();
+  return { ok: true };
+}
+
 /* ------------------------------------------------------------ seasons ---- */
 
 export async function startSeason(
