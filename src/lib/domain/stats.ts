@@ -91,13 +91,20 @@ function allMatches(sessions: Session[]): Match[] {
 
 /**
  * Everything on the season table, derived from the sessions in one pass per
- * concern. Sessions must arrive oldest-first so "current streak" means the
- * streak at the end of the latest evening.
+ * concern.
+ *
+ * Ordered here rather than demanded of the caller: the all-time view builds
+ * its list one season at a time, and seasons come back newest first, so the
+ * evenings arrive shuffled. Anything reading "the latest evening" -- current
+ * streaks, attendance runs -- silently means the wrong one otherwise.
  */
 export function seasonStats(
-  sessions: Session[],
+  unordered: Session[],
   roster: PlayerId[],
 ): SeasonStats {
+  const sessions = [...unordered].sort(
+    (a, b) => a.playedOn.localeCompare(b.playedOn) || a.id - b.id,
+  );
   const matches = allMatches(sessions);
   const totalMatches = matches.length;
   const totalSessions = sessions.length;
