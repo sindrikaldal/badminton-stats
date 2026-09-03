@@ -145,6 +145,50 @@ describe("dofnaði og hitnaði", () => {
 });
 
 describe("staðan í kvöld", () => {
+  it("reports the run a player is on now, not only their best", () => {
+    // Kári wins three then loses; Birkir is live on two. The table is read
+    // between games, so what matters is who is hot right now.
+    const matches = [
+      won([KARI, ARNAR], [BIRKIR, GISLI]),
+      won([KARI, ARNAR], [BIRKIR, GISLI]),
+      won([KARI, ARNAR], [BIRKIR, GISLI]),
+      won([BIRKIR, GISLI], [KARI, ARNAR]),
+      won([BIRKIR, GISLI], [KARI, ARNAR]),
+    ];
+    const stats = nightStats(night([KARI, ARNAR, BIRKIR, GISLI], matches));
+
+    expect(lineFor(stats, KARI)).toMatchObject({
+      bestStreak: 3,
+      currentStreak: 0,
+    });
+    expect(lineFor(stats, BIRKIR)).toMatchObject({
+      bestStreak: 2,
+      currentStreak: 2,
+    });
+  });
+
+  it("ranks anyone who has not played below everyone who has", () => {
+    // Birkir and Gísli lost three and are below the bar; Jón never played and
+    // is below it too. A blank record has an average margin of zero, which
+    // would otherwise outrank the margins of people who turned up and lost.
+    const matches = [
+      won([KARI, ARNAR], [BIRKIR, GISLI]),
+      won([KARI, ARNAR], [BIRKIR, GISLI]),
+      won([KARI, ARNAR], [BIRKIR, GISLI]),
+      won([KARI, ARNAR], [DAVID, STEFAN]),
+      won([KARI, ARNAR], [DAVID, STEFAN]),
+      won([KARI, ARNAR], [DAVID, STEFAN]),
+      won([KARI, ARNAR], [DAVID, STEFAN]),
+      won([KARI, ARNAR], [DAVID, STEFAN]),
+    ];
+    const stats = nightStats(
+      night([KARI, ARNAR, BIRKIR, GISLI, DAVID, STEFAN, JON], matches),
+    );
+
+    expect(lineFor(stats, BIRKIR)?.qualified).toBe(false);
+    expect(stats.lines.at(-1)?.playerId).toBe(JON);
+  });
+
   it("lists every attendee, including anyone who played nothing", () => {
     const matches = [won([KARI, ARNAR], [BIRKIR, GISLI])];
     const stats = nightStats(

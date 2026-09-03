@@ -3,11 +3,13 @@ import { EndSession, ReopenSession } from "@/components/EndSession";
 import { MeProvider, WhoAmI } from "@/components/Me";
 import { EmptyState, SectionTitle, Shell } from "@/components/Shell";
 import { MatchList } from "@/components/MatchList";
+import { NightStandings } from "@/components/NightStandings";
 import { SessionAdmin } from "@/components/SessionAdmin";
 import { SessionBoard } from "@/components/SessionBoard";
 import { SessionHistory } from "@/components/SessionHistory";
 import { StartSeason } from "@/components/StartSeason";
 import { StartSession } from "@/components/StartSession";
+import { nightStats } from "@/lib/domain/night";
 import { formatIcelandicDate, formatIcelandicWeekday } from "@/lib/domain/stats";
 import {
   honorFromMatch,
@@ -111,6 +113,7 @@ export default async function TonightPage({
   }
 
   const isOpen = session.endedAt === null;
+  const tonight = nightStats(session);
   const { current, honors } = pairStreaksInSession(session.matches);
   const justPlayed = params.nyr ? Number(params.nyr) : null;
   const freshHonor = justPlayed
@@ -152,6 +155,14 @@ export default async function TonightPage({
               currentStreak={current}
               honorsTonight={honors.length}
               celebrate={freshHonor}
+            />
+
+            <SectionTitle>Staðan í kvöld</SectionTitle>
+            <NightStandings
+              lines={tonight.lines}
+              players={players}
+              leaders={tonight.playerOfTheNight}
+              qualifyThreshold={tonight.qualifyThreshold}
             />
 
             <SessionAdmin

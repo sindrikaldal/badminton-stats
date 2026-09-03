@@ -36,6 +36,8 @@ export type NightLine = {
   avgMargin: number;
   /** Longest personal run tonight. */
   bestStreak: number;
+  /** The run they are on right now -- zero if they lost their last game. */
+  currentStreak: number;
   /** Played enough to be eligible for maður kvöldsins. */
   qualified: boolean;
   /** Null below FADE_MIN_MATCHES -- half of three games is not a trend. */
@@ -120,6 +122,7 @@ export function nightStats(session: Session): NightStats {
       avgMargin:
         mine.length > 0 ? (pointsFor - pointsAgainst) / mine.length : 0,
       bestStreak: streaks.best.get(playerId) ?? 0,
+      currentStreak: streaks.current.get(playerId) ?? 0,
       qualified: mine.length >= qualifyThreshold && mine.length > 0,
       half: halvesOf(mine, playerId),
     };
@@ -171,6 +174,11 @@ function halvesOf(mine: Match[], playerId: PlayerId): NightHalves | null {
  * the season table uses, so "better" means one thing across the app.
  */
 function compareLines(a: NightLine, b: NightLine): number {
+  // Nobody who has yet to pick up a racket outranks someone who played and
+  // lost -- a blank record's average margin is zero, which would beat theirs.
+  const aIdle = a.played === 0;
+  const bIdle = b.played === 0;
+  if (aIdle !== bIdle) return aIdle ? 1 : -1;
   if (a.qualified !== b.qualified) return a.qualified ? -1 : 1;
   if (b.winRate !== a.winRate) return b.winRate - a.winRate;
   if (b.wins !== a.wins) return b.wins - a.wins;
