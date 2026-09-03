@@ -202,6 +202,12 @@ function Leaderboard({
                   <p className="truncate text-[11px] text-ink-faint">
                     {row.wins}S–{row.losses}T · hrina {row.bestStreak} ·{" "}
                     {formatPercent(row.attendanceRate)} mæting
+                    {/* Guests keep their wins but stay off the season board. */}
+                    {row.nightsWon > 0 && !player.isGuest
+                      ? ` · ${row.nightsWon} kvöld ${
+                          row.nightsWon === 1 ? "unnið" : "unnin"
+                        }`
+                      : ""}
                   </p>
                 </div>
 

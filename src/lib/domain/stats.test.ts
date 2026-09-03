@@ -186,6 +186,8 @@ describe("dofnaði, over a season", () => {
     );
 
     expect(kari?.fade).toBeNull();
+    // Still counted, so the page can say how many evenings are still wanted.
+    expect(kari?.fadeSessions).toBe(3);
   });
 });
 

@@ -164,11 +164,11 @@ one-line reductions where the test would restate the implementation.
 2. ~~Staðan í kvöld, under the log form.~~ — **done**.
 3. ~~Kvöldið í tölum on the closed session view.~~ — **done**.
 4. ~~Season fields on `PlayerStats` + tests.~~ — **done**.
-5. Player page: erkifjandi, framlengingar, dofnaði, badge — **each shipping
-   with its countdown teaser**, not as a later pass. Every one of these is
-   empty until roughly December, so without the countdown the whole step looks
-   like nothing happened, and a step that looks like nothing happened is the
-   one that quietly never gets finished.
+5. ~~Player page: erkifjandi, framlengingar, dofnaði, badge — **each shipping
+   with its countdown teaser**, not as a later pass.~~ — **done**. Every one of
+   these is empty until roughly December, so without the countdown the whole
+   step looks like nothing happened, and a step that looks like nothing
+   happened is the one that quietly never gets finished.
 6. Met & stuð: mætingarkóngur.
 
 ## Out of scope

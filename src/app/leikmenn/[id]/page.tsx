@@ -5,10 +5,14 @@ import { MatchList } from "@/components/MatchList";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
 import { EmptyState, SectionTitle, Shell } from "@/components/Shell";
 import {
+  MIN_DEUCE_GAMES,
+  MIN_FADE_SESSIONS,
+  MIN_NEMESIS_MEETINGS,
   chemistryFor,
   formatIcelandicDate,
   formatPercent,
   headToHead,
+  nemesisFor,
   rankedLeaderboard,
   recentMatchesFor,
   seasonStats,
@@ -72,6 +76,15 @@ export default async function PlayerPage({
 
   const best = chemistry.filter((c) => c.played >= 3)[0];
 
+  // Guests are opponents like anyone else, but never candidates: an erkifjandi
+  // you have met on one evening is not an erkifjandi.
+  const regulars = new Set(players.filter((p) => !p.isGuest).map((p) => p.id));
+  const nemesis = nemesisFor(matches, playerId, regulars);
+  const closestRival = Math.max(
+    0,
+    ...h2h.filter((h) => regulars.has(h.opponent)).map((h) => h.played),
+  );
+
   return (
     <Shell status={allTime ? "Frá upphafi" : season?.name}>
       <Link href="/leikmenn" className="eyebrow">
@@ -95,6 +108,11 @@ export default async function PlayerPage({
               {player.isGuest ? "Gestur" : "Fastamaður"}
               {!player.isActive ? " · í geymslu" : ""}
             </p>
+            {mine && mine.nightsWon > 0 ? (
+              <p className="display mt-1.5 inline-flex rounded border border-win/50 bg-win/10 px-2 py-0.5 text-[11px] tracking-[0.06em] text-win">
+                {mine.nightsWon}× maður kvöldsins
+              </p>
+            ) : null}
           </div>
         </div>
 
@@ -175,6 +193,53 @@ export default async function PlayerPage({
               detail={`${mine.sessionsAttended} af ${stats.totalSessions} kvöldum`}
               tone="challenge"
             />
+            {mine.deuce.played >= MIN_DEUCE_GAMES ? (
+              <Tile
+                label="Framlengingar"
+                value={`${mine.deuce.wins}–${mine.deuce.played - mine.deuce.wins}`}
+                detail="leikir sem fóru fram yfir 11"
+                tone={
+                  mine.deuce.wins * 2 >= mine.deuce.played ? "win" : "muted"
+                }
+              />
+            ) : (
+              <Tile
+                compact
+                label="Framlengingar"
+                value="–"
+                detail={waiting(
+                  MIN_DEUCE_GAMES - mine.deuce.played,
+                  (n) => (n === 1 ? "eina framlengingu" : `${n} framlengingar`),
+                )}
+                tone="muted"
+              />
+            )}
+            {mine.fade ? (
+              <Tile
+                compact
+                label={fadeLabel(mine.fade.delta)}
+                value={`${mine.fade.first.wins}–${mine.fade.first.losses} → ${mine.fade.second.wins}–${mine.fade.second.losses}`}
+                detail={`fyrri gegn seinni hluta, ${mine.fade.sessions} kvöld`}
+                tone={
+                  mine.fade.delta < 0
+                    ? "flame"
+                    : mine.fade.delta > 0
+                      ? "win"
+                      : "muted"
+                }
+              />
+            ) : (
+              <Tile
+                compact
+                label="Dofnaði"
+                value="–"
+                detail={waiting(
+                  MIN_FADE_SESSIONS - mine.fadeSessions,
+                  (n) => `${n} kvöld`,
+                )}
+                tone="muted"
+              />
+            )}
           </div>
 
           {best ? (
@@ -196,6 +261,34 @@ export default async function PlayerPage({
               </div>
             </>
           ) : null}
+
+          <SectionTitle>Erkifjandi</SectionTitle>
+          {nemesis ? (
+            <div className="card glow-flame flex items-center gap-3 p-4">
+              <Avatar player={byId.get(nemesis.opponent)!} size="lg" />
+              <div className="min-w-0 flex-1">
+                <p className="display truncate text-lg text-ink">
+                  {byId.get(nemesis.opponent)?.shortName}
+                </p>
+                <p className="text-xs text-ink-faint">
+                  {nemesis.played} viðureignir ·{" "}
+                  {nemesis.played - nemesis.wins} töp
+                </p>
+              </div>
+              <p className="display tnum text-2xl text-flame">
+                {formatPercent(nemesis.winRate)}
+              </p>
+            </div>
+          ) : (
+            <div className="card p-4">
+              <p className="text-sm text-ink-faint">
+                {waiting(MIN_NEMESIS_MEETINGS - closestRival, (n) =>
+                  n === 1 ? "eina viðureign" : `${n} viðureignir`,
+                )}{" "}
+                við sama mann.
+              </p>
+            </div>
+          )}
 
           {chemistry.length > 1 ? (
             <>
@@ -239,16 +332,29 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
+/** "Þarf 3 kvöld í viðbót" -- what a stat is still waiting for. */
+function waiting(short: number, unit: (n: number) => string): string {
+  return `Þarf ${unit(Math.max(1, short))} í viðbót`;
+}
+
+function fadeLabel(delta: number): string {
+  if (delta < 0) return "Dofnaði";
+  if (delta > 0) return "Hitnaði";
+  return "Jafn út kvöldið";
+}
+
 function Tile({
   label,
   value,
   detail,
   tone,
+  compact = false,
 }: {
   label: string;
   value: string;
   detail: string;
   tone: "win" | "challenge" | "flame" | "muted";
+  compact?: boolean;
 }) {
   const color =
     tone === "win"
@@ -264,7 +370,11 @@ function Tile({
   return (
     <div className={`card p-4 ${glow}`}>
       <p className="eyebrow">{label}</p>
-      <p className={`display tnum mt-1 text-4xl ${color}`}>{value}</p>
+      <p
+        className={`display tnum mt-1 ${compact ? "text-2xl" : "text-4xl"} ${color}`}
+      >
+        {value}
+      </p>
       <p className="mt-1 text-[11px] text-ink-faint">{detail}</p>
     </div>
   );

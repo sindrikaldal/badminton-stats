@@ -67,6 +67,8 @@ export type PlayerStats = {
   deuce: DeuceRecord;
   /** Null until MIN_FADE_SESSIONS evenings are long enough to count. */
   fade: SeasonFade | null;
+  /** Evenings long enough to count, whether or not that is yet enough. */
+  fadeSessions: number;
   /**
    * Evenings won outright or shared. Computed for everyone; guests are filtered
    * out where it is shown, since a season board is no place for someone who
@@ -234,6 +236,7 @@ export function seasonStats(
       qualified: played >= qualifyThreshold && played > 0,
       deuce,
       fade: fadeFrom(fades.get(playerId)),
+      fadeSessions: fades.get(playerId)?.sessions ?? 0,
       nightsWon: nightsWon.get(playerId) ?? 0,
     };
   });
