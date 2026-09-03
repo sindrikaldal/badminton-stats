@@ -223,3 +223,73 @@ describe("erkifjandi", () => {
     expect(nemesisFor(withGuest, KARI, regulars)?.opponent).toBe(BIRKIR);
   });
 });
+
+describe("mætingarkóngur", () => {
+  const attendanceRecord = (sessions: Session[], eligible: PlayerId[]) =>
+    seasonStats(sessions, ROSTER.concat(DAVID), new Set(eligible)).records.find(
+      (r) => r.kind === "attendance-streak",
+    );
+
+  const evening = (id: number, playedOn: string, attendees: PlayerId[]) =>
+    session(id, playedOn, [won([KARI, ARNAR], [BIRKIR, GISLI])], attendees);
+
+  it("crowns the longest run of evenings turned up to", () => {
+    const record = attendanceRecord(
+      [
+        evening(1, "2026-01-07", [KARI, ARNAR, BIRKIR, GISLI]),
+        // Only Kári makes it out in the second week.
+        evening(2, "2026-01-14", [KARI]),
+        evening(3, "2026-01-21", [KARI, ARNAR, BIRKIR, GISLI]),
+        evening(4, "2026-01-28", [KARI, ARNAR, BIRKIR, GISLI]),
+      ],
+      ROSTER,
+    );
+
+    expect(record?.value).toBe("4");
+    expect(record?.players).toEqual([KARI]);
+  });
+
+  it("shares the crown when two have the same run", () => {
+    const record = attendanceRecord(
+      [
+        evening(1, "2026-01-07", [KARI, BIRKIR, GISLI]),
+        // Gísli skips the second week, leaving two sharing the longest run.
+        evening(2, "2026-01-14", [KARI, BIRKIR]),
+      ],
+      [KARI, BIRKIR, GISLI],
+    );
+
+    expect(record?.players).toEqual([KARI, BIRKIR]);
+  });
+
+  it("stays quiet while nobody has missed an evening", () => {
+    // Early in a season everyone has a perfect run, and a crown the whole
+    // group shares says nothing about anyone.
+    const record = attendanceRecord(
+      [
+        evening(1, "2026-01-07", ROSTER),
+        evening(2, "2026-01-14", ROSTER),
+        evening(3, "2026-01-21", ROSTER),
+      ],
+      ROSTER,
+    );
+
+    expect(record).toBeUndefined();
+  });
+
+  it("never crowns a guest, however faithfully they turn up", () => {
+    const every = [KARI, ARNAR, BIRKIR, GISLI, DAVID];
+    const record = attendanceRecord(
+      [
+        evening(1, "2026-01-07", [DAVID, ARNAR]),
+        evening(2, "2026-01-14", every),
+        evening(3, "2026-01-21", every),
+      ],
+      ROSTER,
+    );
+
+    // Davíð turned up three weeks running; Arnar is the longest-serving regular.
+    expect(record?.players).toEqual([ARNAR]);
+    expect(record?.value).toBe("3");
+  });
+});

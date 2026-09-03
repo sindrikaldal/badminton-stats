@@ -55,6 +55,8 @@ export default async function StatsPage({
   const stats = seasonStats(
     sessions,
     players.map((p) => p.id),
+    // Guests count towards everyone's record but are never named by an award.
+    new Set(players.filter((p) => !p.isGuest).map((p) => p.id)),
   );
   const byId = new Map(players.map((p) => [p.id, p]));
 
@@ -283,6 +285,13 @@ function Pairs({
   );
 }
 
+/** "Kári & Arnar", but "Kári, Arnar & Birkir" once a record is shared around. */
+function joinNames(names: (string | undefined)[]): string {
+  const shown = names.map((n) => n ?? "?");
+  if (shown.length <= 1) return shown[0] ?? "";
+  return `${shown.slice(0, -1).join(", ")} & ${shown[shown.length - 1]}`;
+}
+
 function Records({
   stats,
   byId,
@@ -302,16 +311,12 @@ function Records({
           {record.players.length > 0 ? (
             <p className="mt-2 text-sm text-ink-muted">
               <span className="display text-ink">
-                {record.players
-                  .map((id) => byId.get(id)?.shortName ?? "?")
-                  .join(" & ")}
+                {joinNames(record.players.map((id) => byId.get(id)?.shortName))}
               </span>
               {record.beaten?.length ? (
                 <>
                   {" gegn "}
-                  {record.beaten
-                    .map((id) => byId.get(id)?.shortName ?? "?")
-                    .join(" & ")}
+                  {joinNames(record.beaten.map((id) => byId.get(id)?.shortName))}
                 </>
               ) : null}
             </p>

@@ -57,9 +57,14 @@ export default async function PlayerPage({
   const sessions = sessionLists.flat();
   const matches = sessions.flatMap((s) => s.matches);
 
+  // Guests are opponents like anyone else, but never candidates: an erkifjandi
+  // you have met on one evening is not an erkifjandi.
+  const regulars = new Set(players.filter((p) => !p.isGuest).map((p) => p.id));
+
   const stats = seasonStats(
     sessions,
     players.map((p) => p.id),
+    regulars,
   );
   const mine = stats.players.find((s) => s.playerId === playerId);
   const ranked = rankedLeaderboard(stats.players).filter((s) => s.played > 0);
@@ -76,9 +81,6 @@ export default async function PlayerPage({
 
   const best = chemistry.filter((c) => c.played >= 3)[0];
 
-  // Guests are opponents like anyone else, but never candidates: an erkifjandi
-  // you have met on one evening is not an erkifjandi.
-  const regulars = new Set(players.filter((p) => !p.isGuest).map((p) => p.id));
   const nemesis = nemesisFor(matches, playerId, regulars);
   const closestRival = Math.max(
     0,

@@ -98,7 +98,8 @@ export type SeasonRecord = {
     | "biggest-win"
     | "longest-game"
     | "busiest-night"
-    | "longest-personal-streak";
+    | "longest-personal-streak"
+    | "attendance-streak";
   label: string;
   value: string;
   detail: string;
@@ -135,6 +136,12 @@ function allMatches(sessions: Session[]): Match[] {
 export function seasonStats(
   unordered: Session[],
   roster: PlayerId[],
+  /**
+   * Who may be *named* by a season award. Guests play, win and count towards
+   * everyone else's record, but a season board is no place for someone who
+   * turned up once. Defaults to the whole roster.
+   */
+  eligible: ReadonlySet<PlayerId> = new Set(roster),
 ): SeasonStats {
   const sessions = [...unordered].sort(
     (a, b) => a.playedOn.localeCompare(b.playedOn) || a.id - b.id,
@@ -247,7 +254,7 @@ export function seasonStats(
     qualifyThreshold,
     players,
     pairs: pairStats(matches, honorsByPair),
-    records: seasonRecords(sessions),
+    records: seasonRecords(sessions, players, eligible),
   };
 }
 
@@ -415,7 +422,11 @@ export function chemistryFor(
     .sort((a, b) => b.winRate - a.winRate || b.played - a.played);
 }
 
-function seasonRecords(sessions: Session[]): SeasonRecord[] {
+function seasonRecords(
+  sessions: Session[],
+  players: PlayerStats[],
+  eligible: ReadonlySet<PlayerId>,
+): SeasonRecord[] {
   const matches = allMatches(sessions);
   if (matches.length === 0) return [];
 
@@ -489,6 +500,28 @@ function seasonRecords(sessions: Session[]): SeasonRecord[] {
       sessionId: streakHolder.sessionId,
       matchId: null,
       players: [streakHolder.player],
+    });
+  }
+
+  const faithful = players.filter(
+    (p) => eligible.has(p.playerId) && p.attendanceStreak > 0,
+  );
+  const longestRun = Math.max(0, ...faithful.map((p) => p.attendanceStreak));
+  const kings = faithful
+    .filter((p) => p.attendanceStreak === longestRun)
+    .map((p) => p.playerId)
+    .sort((a, b) => a - b);
+  // Early in a season nobody has missed anything, and a crown shared by the
+  // whole group distinguishes no one. It appears the week someone sleeps in.
+  if (longestRun > 0 && kings.length < faithful.length) {
+    records.push({
+      kind: "attendance-streak",
+      label: "Mætingarkóngur",
+      value: `${longestRun}`,
+      detail: `kvöld í röð af ${sessions.length} alls`,
+      sessionId: null,
+      matchId: null,
+      players: kings,
     });
   }
 

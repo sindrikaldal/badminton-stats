@@ -114,7 +114,7 @@ group records become more cards in *Met & stuð*.
 | **Erkifjandi** | Player page | The opponent you have the worst record against — lowest win rate, tie broken by more meetings. Minimum **8 meetings**; you face each regular 2–3 times an evening, so it lands around evening four. The exact mirror of *Besti meðspilari*, off the existing `headToHead`. |
 | **Framlengingar** | Player page | W–L in games where the **losing** score reached 10. Honest "clutch" — 12–10 counts, 11–9 does not. Minimum **5** such games. |
 | **Dofnaði (season)** | Player page | Aggregate each evening's halves across the season. Do **not** split the season itself, or you are measuring November against February rather than fresh against tired. Minimum **4** evenings of ≥ 4 matches. |
-| **Mætingarkóngur** | Met & stuð | Longest run of consecutive evenings attended. The summer cannot break it — between seasons there are no evenings, so a live streak carries across. The only thing that ends it is an evening the group played and you did not. |
+| **Mætingarkóngur** | Met & stuð | Longest run of consecutive evenings attended. The summer cannot break it — between seasons there are no evenings, so a live streak carries across. The only thing that ends it is an evening the group played and you did not. Hidden while *everyone* is on the same run: early in a season nobody has missed anything, and a crown the whole group shares distinguishes no one. It appears the week someone sleeps in. |
 | **`4× maður kvöldsins`** | Player page + leaderboard row | A badge, not a named noun — "Kvöldsigrar" reads as "wins tonight", which is precisely what it is not. Shared awards count for everyone who shared. |
 
 ## Code
@@ -169,8 +169,11 @@ one-line reductions where the test would restate the implementation.
    these is empty until roughly December, so without the countdown the whole
    step looks like nothing happened, and a step that looks like nothing
    happened is the one that quietly never gets finished.
-6. Met & stuð: mætingarkóngur.
+6. ~~Met & stuð: mætingarkóngur.~~ — **done**.
 
+All six shipped. `seasonStats` takes the eligible players as a third argument,
+so the guest rule is enforced in one place rather than remembered at each call
+site.
 ## Out of scope
 
 - **Carry stat** (win rate with you vs. without you) — see the tone rule.
