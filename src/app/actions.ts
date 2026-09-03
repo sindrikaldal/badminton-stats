@@ -160,7 +160,11 @@ export async function startSession(
   redirect(`/?kvold=${session.id}`);
 }
 
-/** Ends the evening. The Kvöldið tab then offers to start the next one. */
+/**
+ * Ends the evening and lands on it, where the summary is waiting. Going back
+ * to an empty Kvöldið tab instead would throw away the one moment everyone is
+ * still standing together looking at the phone.
+ */
 export async function endSession(
   _prev: ActionResult | null,
   formData: FormData,
@@ -169,7 +173,7 @@ export async function endSession(
   if (!sessionId) return { ok: false, error: "Kvöld fannst ekki." };
   await repo.endSession(sessionId);
   revalidateAll();
-  redirect("/");
+  redirect(`/?kvold=${sessionId}`);
 }
 
 export async function reopenSession(

@@ -51,8 +51,12 @@ poll, cannot be tested, and stops being funny in a fortnight.
 
 **It is a place, not a moment.** A permanent section at the top of the closed
 session view (`/?kvold=<id>`), above the match list. Tapping *Ljúka kvöldinu*
-revalidates and the summary is simply what is on screen — the reveal comes free
-from a page transition that already exists.
+lands there, so the summary is simply what is on screen — no modal, no state.
+
+This needed one change to earn the word "free": `endSession` redirected to `/`,
+which with no evening open is the "Ekkert kvöld í gangi" screen, so the card
+would never have been seen. It now redirects to the night it just closed,
+matching `reopenSession`, which already did.
 
 Deliberately *not* a full-screen takeover like `Celebration`: sessions can be
 reopened and re-ended ([EndSession.tsx](src/components/EndSession.tsx)), so a
@@ -70,6 +74,10 @@ Contents:
 | **Kvöldparið** | Best duo with at least `MIN_PAIR_MATCHES` (3) games together. Win rate, then games. Hidden if no pair qualifies. |
 | **Dofnaði / Hitnaði** | Both ends of the same tile — a stat with only a loser reads meaner than one that swings both ways. |
 | **Roster lines** | Every attendee: `3S–2T · lengsta hrina 2 · +1.4`. |
+
+*Kvöldparið* hides when a duo shares maður kvöldsins and is also the best pair:
+the two tiles then carry the same names and the same record, and the second one
+is the headline restated.
 
 The roster lines are the part worth defending. Three or four award tiles get
 swept by one or two people; someone who turned up and went 1–4 otherwise gets no
@@ -153,8 +161,8 @@ one-line reductions where the test would restate the implementation.
 ## Build order
 
 1. ~~`night.ts` + its tests~~ — **done**. It powers all three surfaces.
-2. Staðan í kvöld, under the log form.
-3. Kvöldið í tölum on the closed session view.
+2. ~~Staðan í kvöld, under the log form.~~ — **done**.
+3. ~~Kvöldið í tölum on the closed session view.~~ — **done**.
 4. Season fields on `PlayerStats` + tests.
 5. Player page: erkifjandi, framlengingar, dofnaði, badge — **each shipping
    with its countdown teaser**, not as a later pass. Every one of these is

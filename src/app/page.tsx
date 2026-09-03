@@ -4,6 +4,7 @@ import { MeProvider, WhoAmI } from "@/components/Me";
 import { EmptyState, SectionTitle, Shell } from "@/components/Shell";
 import { MatchList } from "@/components/MatchList";
 import { NightStandings } from "@/components/NightStandings";
+import { NightSummary } from "@/components/NightSummary";
 import { SessionAdmin } from "@/components/SessionAdmin";
 import { SessionBoard } from "@/components/SessionBoard";
 import { SessionHistory } from "@/components/SessionHistory";
@@ -178,7 +179,11 @@ export default async function TonightPage({
             />
           </>
         ) : (
-          <ReopenSession sessionId={session.id} />
+          <>
+            <SectionTitle>Kvöldið í tölum</SectionTitle>
+            <NightSummary stats={tonight} players={players} />
+            <ReopenSession sessionId={session.id} />
+          </>
         )}
 
         <SectionTitle>
