@@ -111,6 +111,11 @@ export function scoreFor(match: Match, player: PlayerId): [number, number] | nul
   return null;
 }
 
+/** Did this game go to deuce -- 10-10 and on? The loser reaching ten says so. */
+export function reachedDeuce(match: Match): boolean {
+  return losingScore(match) >= 10;
+}
+
 export const HONOR_STREAK_LENGTH = 3;
 
 /** A duo must have played this many games together to be ranked as a pair. */

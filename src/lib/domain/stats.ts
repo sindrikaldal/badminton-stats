@@ -1,3 +1,4 @@
+import { type HalfRecord, nightStats } from "./night";
 import { pairStreaksInSession, personalStreaksInSession } from "./streaks";
 import {
   type Match,
@@ -13,6 +14,7 @@ import {
   opponentsOf,
   pairKey,
   partnerOf,
+  reachedDeuce,
   scoreFor,
   winnersOf,
   winningScore,
@@ -22,6 +24,25 @@ import {
 export const QUALIFY_SHARE = 0.25;
 
 export { MIN_PAIR_MATCHES };
+
+/** Meetings needed before an opponent can be called an erkifjandi. */
+export const MIN_NEMESIS_MEETINGS = 8;
+/** Games gone to deuce before the record in them means anything. */
+export const MIN_DEUCE_GAMES = 5;
+/** Evenings long enough to count before a season-long fade is worth naming. */
+export const MIN_FADE_SESSIONS = 4;
+
+/** Record in games that went past eleven. */
+export type DeuceRecord = { played: number; wins: number };
+
+export type SeasonFade = {
+  first: HalfRecord;
+  second: HalfRecord;
+  /** Second-half win rate minus first-half. Negative means they fade. */
+  delta: number;
+  /** Evenings long enough to have two halves. */
+  sessions: number;
+};
 
 export type PlayerStats = {
   playerId: PlayerId;
@@ -40,7 +61,18 @@ export type PlayerStats = {
   currentStreak: number;
   sessionsAttended: number;
   attendanceRate: number;
+  /** Longest run of consecutive evenings attended. */
+  attendanceStreak: number;
   qualified: boolean;
+  deuce: DeuceRecord;
+  /** Null until MIN_FADE_SESSIONS evenings are long enough to count. */
+  fade: SeasonFade | null;
+  /**
+   * Evenings won outright or shared. Computed for everyone; guests are filtered
+   * out where it is shown, since a season board is no place for someone who
+   * came once.
+   */
+  nightsWon: number;
 };
 
 export type PairStats = {
@@ -114,8 +146,20 @@ export function seasonStats(
   const honorsByPair = new Map<PairKey, number>();
   const bestStreak = new Map<PlayerId, number>();
   const currentStreak = new Map<PlayerId, number>();
+  const nightsWon = new Map<PlayerId, number>();
+  const fades = new Map<PlayerId, FadeTally>();
 
   for (const session of sessions) {
+    // One pass per evening serves both the nights-won count and the halves
+    // the season-long fade is built from.
+    const night = nightStats(session);
+    for (const player of night.playerOfTheNight) {
+      nightsWon.set(player, (nightsWon.get(player) ?? 0) + 1);
+    }
+    for (const line of night.lines) {
+      if (line.half) addHalves(fades, line.playerId, line.half);
+    }
+
     for (const honor of pairStreaksInSession(session.matches).honors) {
       honorsByPair.set(honor.pair, (honorsByPair.get(honor.pair) ?? 0) + 1);
       for (const player of honor.players) {
@@ -133,7 +177,17 @@ export function seasonStats(
   }
 
   const attendance = new Map<PlayerId, number>();
+  const longestRun = new Map<PlayerId, number>();
+  const run = new Map<PlayerId, number>();
   for (const session of sessions) {
+    const here = new Set(session.attendees);
+    // Only an evening the group played and you missed ends a run -- which is
+    // why a summer, containing no evenings at all, cannot.
+    for (const player of roster) {
+      const next = here.has(player) ? (run.get(player) ?? 0) + 1 : 0;
+      run.set(player, next);
+      if (next > (longestRun.get(player) ?? 0)) longestRun.set(player, next);
+    }
     for (const player of session.attendees) {
       attendance.set(player, (attendance.get(player) ?? 0) + 1);
     }
@@ -144,14 +198,20 @@ export function seasonStats(
     let wins = 0;
     let pointsFor = 0;
     let pointsAgainst = 0;
+    const deuce: DeuceRecord = { played: 0, wins: 0 };
 
     for (const match of matches) {
       const score = scoreFor(match, playerId);
       if (!score) continue;
+      const won = didWin(match, playerId);
       played += 1;
-      if (didWin(match, playerId)) wins += 1;
+      if (won) wins += 1;
       pointsFor += score[0];
       pointsAgainst += score[1];
+      if (reachedDeuce(match)) {
+        deuce.played += 1;
+        if (won) deuce.wins += 1;
+      }
     }
 
     const sessionsAttended = attendance.get(playerId) ?? 0;
@@ -170,7 +230,11 @@ export function seasonStats(
       currentStreak: currentStreak.get(playerId) ?? 0,
       sessionsAttended,
       attendanceRate: totalSessions > 0 ? sessionsAttended / totalSessions : 0,
+      attendanceStreak: longestRun.get(playerId) ?? 0,
       qualified: played >= qualifyThreshold && played > 0,
+      deuce,
+      fade: fadeFrom(fades.get(playerId)),
+      nightsWon: nightsWon.get(playerId) ?? 0,
     };
   });
 
@@ -182,6 +246,69 @@ export function seasonStats(
     pairs: pairStats(matches, honorsByPair),
     records: seasonRecords(sessions),
   };
+}
+
+type FadeTally = {
+  first: HalfRecord;
+  second: HalfRecord;
+  sessions: number;
+};
+
+function addHalves(
+  fades: Map<PlayerId, FadeTally>,
+  playerId: PlayerId,
+  half: { first: HalfRecord; second: HalfRecord },
+): void {
+  const tally = fades.get(playerId) ?? {
+    first: { wins: 0, losses: 0 },
+    second: { wins: 0, losses: 0 },
+    sessions: 0,
+  };
+  tally.first.wins += half.first.wins;
+  tally.first.losses += half.first.losses;
+  tally.second.wins += half.second.wins;
+  tally.second.losses += half.second.losses;
+  tally.sessions += 1;
+  fades.set(playerId, tally);
+}
+
+/**
+ * Each evening's halves added together, rather than the season cut down the
+ * middle -- otherwise this measures November against February instead of
+ * fresh against tired.
+ */
+function fadeFrom(tally: FadeTally | undefined): SeasonFade | null {
+  if (!tally || tally.sessions < MIN_FADE_SESSIONS) return null;
+
+  const firstPlayed = tally.first.wins + tally.first.losses;
+  const secondPlayed = tally.second.wins + tally.second.losses;
+  if (firstPlayed === 0 || secondPlayed === 0) return null;
+
+  return {
+    first: tally.first,
+    second: tally.second,
+    delta: tally.second.wins / secondPlayed - tally.first.wins / firstPlayed,
+    sessions: tally.sessions,
+  };
+}
+
+/**
+ * The opponent with the best record against this player -- the mirror of
+ * "besti meðspilari". Only regulars are eligible: being told your nemesis is
+ * a man you have met once is worse than being told nothing.
+ */
+export function nemesisFor(
+  matches: Match[],
+  playerId: PlayerId,
+  eligible: ReadonlySet<PlayerId>,
+): HeadToHead | null {
+  return (
+    headToHead(matches, playerId)
+      .filter(
+        (h) => h.played >= MIN_NEMESIS_MEETINGS && eligible.has(h.opponent),
+      )
+      .sort((a, b) => a.winRate - b.winRate || b.played - a.played)[0] ?? null
+  );
 }
 
 /**
