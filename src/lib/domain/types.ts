@@ -112,3 +112,6 @@ export function scoreFor(match: Match, player: PlayerId): [number, number] | nul
 }
 
 export const HONOR_STREAK_LENGTH = 3;
+
+/** A duo must have played this many games together to be ranked as a pair. */
+export const MIN_PAIR_MATCHES = 3;

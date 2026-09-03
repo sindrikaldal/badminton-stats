@@ -4,6 +4,7 @@ import {
   type PairKey,
   type PlayerId,
   type Session,
+  MIN_PAIR_MATCHES,
   didPlay,
   didWin,
   losersOf,
@@ -19,8 +20,8 @@ import {
 
 /** A player must have played this share of the season's matches to be ranked. */
 export const QUALIFY_SHARE = 0.25;
-/** A duo must have played this many games together to appear in chemistry. */
-export const MIN_PAIR_MATCHES = 3;
+
+export { MIN_PAIR_MATCHES };
 
 export type PlayerStats = {
   playerId: PlayerId;
