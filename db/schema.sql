@@ -34,10 +34,17 @@ CREATE TABLE IF NOT EXISTS sessions (
   season_id   integer NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
   played_on   date NOT NULL,
   note        text,
+  -- NULL means the evening is still in progress. The Kvöldið tab shows the
+  -- open one; with none open it offers to start a night.
+  ended_at    timestamptz,
   created_at  timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS sessions_season_idx ON sessions (season_id, played_on DESC);
+
+-- At most one evening in progress at a time, across every season.
+CREATE UNIQUE INDEX IF NOT EXISTS sessions_one_open
+  ON sessions ((ended_at IS NULL)) WHERE ended_at IS NULL;
 
 -- Attendance is recorded explicitly rather than inferred from matches, so
 -- "turned up, played nothing" is representable.

@@ -31,6 +31,13 @@ thing standing between the group's data and a passer-by.
 Use `127.0.0.1` rather than `localhost` — resolving to `::1` first makes the
 connection hang, since the container publishes on IPv4.
 
+### Schema changes
+
+`db/schema.sql` is the current shape, for a fresh database. Each change also
+lands as a numbered file in `db/migrations/` to be run once against a database
+that already has data. Applying them is manual — at this size, a migration
+framework costs more than it saves.
+
 ### Handy database commands
 
 ```bash
@@ -62,7 +69,9 @@ Everything below can be done in the Vercel dashboard — no CLI needed.
    `DATABASE_URL` for you.
 3. **Apply the schema.** Open the provider's own SQL editor and paste
    [`db/schema.sql`](db/schema.sql). This is the only step the Vercel dashboard
-   itself cannot do.
+   itself cannot do. If the database already existed, run whichever files in
+   [`db/migrations/`](db/migrations) it has not seen yet instead — each is
+   written to be safe to re-run.
 4. **Set the group code.** Settings → Environment Variables → add `GROUP_CODE`
    for all environments. Pick something the group will remember.
 5. **Redeploy** so the new environment variables are picked up. Deployments →

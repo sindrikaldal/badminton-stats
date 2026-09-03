@@ -13,6 +13,14 @@ type MatchRow = {
   scoreB: number;
 };
 
+type SessionRow = {
+  id: number;
+  seasonId: number;
+  playedOn: Date;
+  note: string | null;
+  endedAt: Date | null;
+};
+
 function toMatch(row: MatchRow): Match {
   return {
     id: row.id,
@@ -149,10 +157,8 @@ export async function createSeason(input: {
  * hundred matches a year, and keeps all derivation in one testable place.
  */
 export async function getSessions(seasonId: number): Promise<Session[]> {
-  const sessionRows = await sql<
-    { id: number; seasonId: number; playedOn: Date; note: string | null }[]
-  >`
-    SELECT id, season_id, played_on, note
+  const sessionRows = await sql<SessionRow[]>`
+    SELECT id, season_id, played_on, note, ended_at
     FROM sessions
     WHERE season_id = ${seasonId}
     ORDER BY played_on, id
@@ -179,6 +185,7 @@ export async function getSessions(seasonId: number): Promise<Session[]> {
     seasonId: row.seasonId,
     playedOn: toIsoDate(row.playedOn),
     note: row.note,
+    endedAt: row.endedAt ? row.endedAt.toISOString() : null,
     attendees: attendeeRows
       .filter((a) => a.sessionId === row.id)
       .map((a) => a.playerId),
@@ -187,10 +194,9 @@ export async function getSessions(seasonId: number): Promise<Session[]> {
 }
 
 export async function getSession(id: number): Promise<Session | null> {
-  const [row] = await sql<
-    { id: number; seasonId: number; playedOn: Date; note: string | null }[]
-  >`
-    SELECT id, season_id, played_on, note FROM sessions WHERE id = ${id}
+  const [row] = await sql<SessionRow[]>`
+    SELECT id, season_id, played_on, note, ended_at
+    FROM sessions WHERE id = ${id}
   `;
   if (!row) return null;
 
@@ -207,22 +213,83 @@ export async function getSession(id: number): Promise<Session | null> {
     seasonId: row.seasonId,
     playedOn: toIsoDate(row.playedOn),
     note: row.note,
+    endedAt: row.endedAt ? row.endedAt.toISOString() : null,
     attendees: attendees.map((a) => a.playerId),
     matches: matchRows.map(toMatch),
   };
 }
 
-/** The evening currently in progress, or the most recent one. */
-export async function getLatestSession(
-  seasonId: number,
-): Promise<Session | null> {
+/** The evening in progress, if there is one. At most one can be open. */
+export async function getOpenSession(): Promise<Session | null> {
   const [row] = await sql<{ id: number }[]>`
-    SELECT id FROM sessions
-    WHERE season_id = ${seasonId}
-    ORDER BY played_on DESC, id DESC
-    LIMIT 1
+    SELECT id FROM sessions WHERE ended_at IS NULL LIMIT 1
   `;
   return row ? getSession(row.id) : null;
+}
+
+export type SessionSummary = {
+  id: number;
+  seasonId: number;
+  seasonName: string;
+  playedOn: string;
+  endedAt: string | null;
+  matchCount: number;
+  attendeeCount: number;
+};
+
+/**
+ * Counted in SQL rather than by loading every match: the history list only
+ * needs totals, and it spans all seasons.
+ */
+export async function getSessionSummaries(
+  limit = 40,
+): Promise<SessionSummary[]> {
+  const rows = await sql<
+    {
+      id: number;
+      seasonId: number;
+      seasonName: string;
+      playedOn: Date;
+      endedAt: Date | null;
+      matchCount: number;
+      attendeeCount: number;
+    }[]
+  >`
+    SELECT
+      s.id,
+      s.season_id,
+      se.name AS season_name,
+      s.played_on,
+      s.ended_at,
+      (SELECT count(*) FROM matches m WHERE m.session_id = s.id)::int AS match_count,
+      (SELECT count(*) FROM session_attendees a WHERE a.session_id = s.id)::int AS attendee_count
+    FROM sessions s
+    JOIN seasons se ON se.id = s.season_id
+    ORDER BY s.played_on DESC, s.id DESC
+    LIMIT ${limit}
+  `;
+
+  return rows.map((row) => ({
+    id: row.id,
+    seasonId: row.seasonId,
+    seasonName: row.seasonName,
+    playedOn: toIsoDate(row.playedOn),
+    endedAt: row.endedAt ? row.endedAt.toISOString() : null,
+    matchCount: row.matchCount,
+    attendeeCount: row.attendeeCount,
+  }));
+}
+
+export async function endSession(id: number): Promise<void> {
+  await sql`UPDATE sessions SET ended_at = now() WHERE id = ${id}`;
+}
+
+/**
+ * Reopens a finished evening. The unique index means this fails while another
+ * night is still in progress, which the caller turns into a readable message.
+ */
+export async function reopenSession(id: number): Promise<void> {
+  await sql`UPDATE sessions SET ended_at = NULL WHERE id = ${id}`;
 }
 
 export async function createSession(input: {
@@ -252,6 +319,7 @@ export async function createSession(input: {
       seasonId: input.seasonId,
       playedOn: input.playedOn,
       note: input.note ?? null,
+      endedAt: null,
       attendees: input.attendees,
       matches: [],
     };

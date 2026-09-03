@@ -15,7 +15,11 @@ INSERT INTO players (name, short_name, initials) VALUES
 
 INSERT INTO seasons (name, started_on) VALUES ('Veturinn 2026–27', '2026-09-01');
 
-INSERT INTO sessions (season_id, played_on) VALUES (1, '2026-08-27'), (1, '2026-09-02');
+-- The older evening is finished; the newer one is left in progress so the
+-- Kvöldið tab opens straight onto a live score pad.
+INSERT INTO sessions (season_id, played_on, ended_at) VALUES
+  (1, '2026-08-27', '2026-08-27 21:30+00'),
+  (1, '2026-09-02', NULL);
 
 INSERT INTO session_attendees (session_id, player_id)
 SELECT s.id, p.id FROM sessions s CROSS JOIN players p;

@@ -32,6 +32,8 @@ export type Session = {
   seasonId: number;
   playedOn: string;
   note: string | null;
+  /** Null while the evening is still in progress. */
+  endedAt: string | null;
   attendees: PlayerId[];
   matches: Match[];
 };

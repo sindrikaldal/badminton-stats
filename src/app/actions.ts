@@ -143,6 +143,14 @@ export async function startSession(
   const season = await repo.getActiveSeason();
   if (!season) return { ok: false, error: "Ekkert virkt tímabil." };
 
+  const open = await repo.getOpenSession();
+  if (open) {
+    return {
+      ok: false,
+      error: "Það er kvöld í gangi. Ljúktu því fyrst.",
+    };
+  }
+
   const session = await repo.createSession({
     seasonId: season.id,
     playedOn,
@@ -150,6 +158,38 @@ export async function startSession(
   });
   revalidateAll();
   redirect(`/?kvold=${session.id}`);
+}
+
+/** Ends the evening. The Kvöldið tab then offers to start the next one. */
+export async function endSession(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const sessionId = Number(formData.get("sessionId"));
+  if (!sessionId) return { ok: false, error: "Kvöld fannst ekki." };
+  await repo.endSession(sessionId);
+  revalidateAll();
+  redirect("/");
+}
+
+export async function reopenSession(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const sessionId = Number(formData.get("sessionId"));
+  if (!sessionId) return { ok: false, error: "Kvöld fannst ekki." };
+
+  const open = await repo.getOpenSession();
+  if (open && open.id !== sessionId) {
+    return {
+      ok: false,
+      error: "Annað kvöld er í gangi. Ljúktu því fyrst.",
+    };
+  }
+
+  await repo.reopenSession(sessionId);
+  revalidateAll();
+  redirect(`/?kvold=${sessionId}`);
 }
 
 export async function updateAttendees(
@@ -221,6 +261,16 @@ export async function logMatch(
   const parsed = readMatch(formData);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0].message };
+  }
+
+  // Guards against a stale form left open on a phone after the night ended.
+  const session = await repo.getSession(sessionId);
+  if (!session) return { ok: false, error: "Kvöld fannst ekki." };
+  if (session.endedAt) {
+    return {
+      ok: false,
+      error: "Þessu kvöldi er lokið. Opnaðu það aftur til að skrá leik.",
+    };
   }
 
   const match = await repo.addMatch({ sessionId, ...parsed.data });

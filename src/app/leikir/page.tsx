@@ -79,8 +79,13 @@ export default async function MatchesPage({
               <section key={session.id}>
                 <div className="mb-2 flex items-end justify-between gap-3">
                   <div>
-                    <h3 className="display text-lg text-ink">
+                    <h3 className="display flex items-center gap-2 text-lg text-ink">
                       {formatIcelandicDate(session.playedOn)}
+                      {session.endedAt === null ? (
+                        <span className="display rounded border border-win/50 bg-win/10 px-1.5 py-0.5 text-[10px] tracking-[0.1em] text-win">
+                          Í gangi
+                        </span>
+                      ) : null}
                     </h3>
                     <p className="text-xs text-ink-faint">
                       {formatIcelandicWeekday(session.playedOn)} ·{" "}
