@@ -51,32 +51,42 @@ personal streaks surviving a rest but not a loss.
 
 ## Deploying
 
-The Vercel CLI on this machine is not logged in yet, so deployment needs one
-interactive step from you:
+Everything below can be done in the Vercel dashboard — no CLI needed.
+
+1. **Import the repo.** Add New → Project, connect the GitHub account that owns
+   this repo, pick `badminton-stats`. Next.js is detected automatically; the
+   defaults are correct. The first deploy will succeed but every page will error
+   until step 2, since there is no database yet.
+2. **Add Postgres.** Storage → Create Database → pick a Marketplace Postgres
+   (Neon and Supabase both work), then connect it to this project. That sets
+   `DATABASE_URL` for you.
+3. **Apply the schema.** Open the provider's own SQL editor and paste
+   [`db/schema.sql`](db/schema.sql). This is the only step the Vercel dashboard
+   itself cannot do.
+4. **Set the group code.** Settings → Environment Variables → add `GROUP_CODE`
+   for all environments. Pick something the group will remember.
+5. **Redeploy** so the new environment variables are picked up. Deployments →
+   the latest one → Redeploy.
+
+Install it on a phone from the deployed URL: Share → Add to Home Screen.
+
+`next build` deliberately does **not** need a database — the client connects on
+first query, so a deploy that lands before step 2 still builds.
+
+<details>
+<summary>The same thing with the CLI</summary>
 
 ```bash
-vercel login
-```
-
-Then, from the project root:
-
-```bash
+vercel login          # not logged in on this machine yet
 vercel link
 vercel integration add neon
-```
-
-Any Marketplace Postgres works — Neon and Supabase both set `DATABASE_URL`
-automatically. After provisioning, apply the schema to the hosted database and
-set the group code:
-
-```bash
 vercel env pull .env.production.local
 psql "$(grep DATABASE_URL .env.production.local | cut -d= -f2- | tr -d '"')" -f db/schema.sql
 vercel env add GROUP_CODE
 vercel deploy --prod
 ```
 
-Install it on a phone from the deployed URL: Share → Add to Home Screen.
+</details>
 
 ## How it fits together
 
