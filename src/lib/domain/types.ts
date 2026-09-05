@@ -111,6 +111,58 @@ export function scoreFor(match: Match, player: PlayerId): [number, number] | nul
   return null;
 }
 
+/**
+ * The mercy rule. A side reaching seven with the other still on nothing ends
+ * the game on the spot, so 7-0 is the one legal score short of eleven -- and
+ * 8-0, 11-0 and 7-1 can never be the final one.
+ */
+export const SEVEN_NIL: [number, number] = [7, 0];
+
+export function isSevenNilScore(a: number, b: number): boolean {
+  return Math.max(a, b) === SEVEN_NIL[0] && Math.min(a, b) === SEVEN_NIL[1];
+}
+
+export function isSevenNil(match: Match): boolean {
+  return isSevenNilScore(match.scoreA, match.scoreB);
+}
+
+/**
+ * Every final score the app accepts: to eleven, win by two, no cap -- or 7-0.
+ * A loser on nil at any other score is impossible, since the game would have
+ * ended at seven.
+ */
+export function isLegalScore(a: number, b: number): boolean {
+  if (a === b) return false;
+  if (isSevenNilScore(a, b)) return true;
+  if (Math.min(a, b) === 0) return false;
+  return Math.max(a, b) >= 11 && Math.abs(a - b) >= 2;
+}
+
+/**
+ * Why a score cannot be a final one, in the words shown on the score pad --
+ * or null when it can. The one place the rule is spelled out, so the pad, the
+ * edit form and the server can never disagree about it.
+ */
+export function scoreProblem(a: number, b: number): string | null {
+  if (a === b) return "Leikur getur ekki endað jafn.";
+  if (isSevenNilScore(a, b)) return null;
+  if (Math.min(a, b) === 0) return "Á núlli lýkur leik aðeins 7–0.";
+  if (Math.max(a, b) < 11) return "Sigurvegari þarf a.m.k. 11 stig, eða 7–0.";
+  if (Math.abs(a - b) < 2) return "Það þarf tveggja stiga mun.";
+  return null;
+}
+
+/**
+ * Orders matches by how badly the loser was beaten. A 7-0 outranks any
+ * margin -- ten points is a hiding, nil is a humiliation -- and margin decides
+ * among the rest.
+ */
+export function compareThrashing(a: Match, b: Match): number {
+  const aSeven = isSevenNil(a) ? 1 : 0;
+  const bSeven = isSevenNil(b) ? 1 : 0;
+  return aSeven - bSeven || marginOf(a) - marginOf(b);
+}
+
 /** Did this game go to deuce -- 10-10 and on? The loser reaching ten says so. */
 export function reachedDeuce(match: Match): boolean {
   return losingScore(match) >= 10;

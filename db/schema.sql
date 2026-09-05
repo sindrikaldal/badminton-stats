@@ -70,10 +70,16 @@ CREATE TABLE IF NOT EXISTS matches (
   CONSTRAINT matches_no_draw CHECK (score_a <> score_b),
   CONSTRAINT matches_scores_sane CHECK (score_a >= 0 AND score_b >= 0),
   -- A game runs to 11, win by 2, no cap: the winner has >= 11 and a margin
-  -- of >= 2. 15-13 passes; 11-10 and 9-2 do not.
-  CONSTRAINT matches_to_eleven_win_by_two CHECK (
-    GREATEST(score_a, score_b) >= 11
-    AND GREATEST(score_a, score_b) - LEAST(score_a, score_b) >= 2
+  -- of >= 2. 15-13 passes; 11-10 and 9-2 do not. The one exception is the
+  -- mercy rule: 7-0 ends the game on the spot, which also means no other
+  -- final score can have a loser on nil -- 11-0 would have stopped at seven.
+  CONSTRAINT matches_legal_final_score CHECK (
+    (GREATEST(score_a, score_b) = 7 AND LEAST(score_a, score_b) = 0)
+    OR (
+      GREATEST(score_a, score_b) >= 11
+      AND LEAST(score_a, score_b) >= 1
+      AND GREATEST(score_a, score_b) - LEAST(score_a, score_b) >= 2
+    )
   ),
   CONSTRAINT matches_four_distinct_players CHECK (
     a1 <> a2 AND b1 <> b2 AND a1 <> b1 AND a1 <> b2 AND a2 <> b1 AND a2 <> b2

@@ -4,7 +4,17 @@ import { useActionState, useEffect, useMemo, useState } from "react";
 import { logMatch } from "@/app/actions";
 import { Avatar } from "./Avatar";
 import { Celebration } from "./Celebration";
-import { HONOR_STREAK_LENGTH, type Match, type PairKey, type Player, type PlayerId, pairKey } from "@/lib/domain/types";
+import { SevenNil } from "./SevenNil";
+import {
+  HONOR_STREAK_LENGTH,
+  SEVEN_NIL,
+  type Match,
+  type PairKey,
+  type Player,
+  type PlayerId,
+  pairKey,
+  scoreProblem,
+} from "@/lib/domain/types";
 import type { Honor, PairStreak } from "@/lib/domain/streaks";
 
 type Slots = [PlayerId | null, PlayerId | null, PlayerId | null, PlayerId | null];
@@ -20,6 +30,7 @@ export function SessionBoard({
   currentStreak,
   honorsTonight,
   celebrate,
+  shame,
 }: {
   sessionId: number;
   attendees: Player[];
@@ -29,8 +40,15 @@ export function SessionBoard({
   currentStreak: PairStreak | null;
   honorsTonight: number;
   celebrate: Honor | null;
+  /** The match just logged, if it ended 7-0. Shown before any honor. */
+  shame: Match | null;
 }) {
   const [state, action, pending] = useActionState(logMatch, null);
+
+  // The humiliation takes the screen first; the honor, if the same game earned
+  // one, waits underneath until it is dismissed.
+  const [shaming, setShaming] = useState(shame !== null);
+  useEffect(() => setShaming(shame !== null), [shame?.id]);
 
   // Winners keep the court, so they start on side A -- unless they have just
   // been split, in which case nobody is pre-filled.
@@ -93,14 +111,23 @@ export function SessionBoard({
   const splitViolation =
     mustSplit !== null && (pairA === mustSplit || pairB === mustSplit);
 
-  const scoreProblem = validateScore(scoreA, scoreB);
-  const canSubmit = complete && !scoreProblem && !pending;
+  const problem = scoreProblem(scoreA, scoreB);
+  const canSubmit = complete && !problem && !pending;
 
   const winnerSide = scoreA > scoreB ? "a" : scoreB > scoreA ? "b" : null;
 
   return (
     <>
-      {celebrate ? (
+      {shame && shaming ? (
+        <SevenNil
+          match={shame}
+          byId={byId}
+          // With no honor behind it, dismissing also drops ?nyr= so a reload
+          // does not replay it. With one, the honor's own close does that.
+          onClose={() => setShaming(false)}
+          last={celebrate === null}
+        />
+      ) : celebrate ? (
         <Celebration
           honor={celebrate}
           players={celebrate.players.map((id) => byId.get(id)).filter((p) => p !== undefined)}
@@ -130,7 +157,7 @@ export function SessionBoard({
         <div className="flex items-center justify-between border-b border-line px-4 py-3">
           <p className="eyebrow">Skrá leik {matches.length + 1}</p>
           <span className="text-[11px] text-ink-faint">
-            Upp í 11 · vinna með 2
+            Upp í 11 · vinna með 2 · 7–0 klárar
           </span>
         </div>
 
@@ -146,6 +173,10 @@ export function SessionBoard({
               onClear={clearSlot}
               score={scoreA}
               onScore={setScoreA}
+              onSevenNil={() => {
+                setScoreA(SEVEN_NIL[0]);
+                setScoreB(SEVEN_NIL[1]);
+              }}
             />
 
             <div className="flex flex-col items-center gap-2 pt-9">
@@ -170,6 +201,10 @@ export function SessionBoard({
               onClear={clearSlot}
               score={scoreB}
               onScore={setScoreB}
+              onSevenNil={() => {
+                setScoreB(SEVEN_NIL[0]);
+                setScoreA(SEVEN_NIL[1]);
+              }}
             />
           </div>
 
@@ -208,8 +243,8 @@ export function SessionBoard({
             </p>
           ) : null}
 
-          {scoreProblem && complete ? (
-            <p className="mt-4 text-sm text-ink-faint">{scoreProblem}</p>
+          {problem && complete ? (
+            <p className="mt-4 text-sm text-ink-faint">{problem}</p>
           ) : null}
 
           {state && !state.ok ? (
@@ -234,7 +269,7 @@ export function SessionBoard({
               ? "Skrái…"
               : !complete
                 ? "Veldu fjóra leikmenn"
-                : scoreProblem
+                : problem
                   ? "Yfirfarðu stigin"
                   : `Skrá úrslit ${scoreA}–${scoreB}`}
           </button>
@@ -267,12 +302,6 @@ function Summary({
   );
 }
 
-function validateScore(a: number, b: number): string | null {
-  if (a === b) return "Leikur getur ekki endað jafn.";
-  if (Math.max(a, b) < 11) return "Sigurvegari þarf a.m.k. 11 stig.";
-  if (Math.abs(a - b) < 2) return "Það þarf tveggja stiga mun.";
-  return null;
-}
 
 function TeamColumn({
   label,
@@ -284,6 +313,7 @@ function TeamColumn({
   onClear,
   score,
   onScore,
+  onSevenNil,
 }: {
   label: string;
   tone: "win" | "challenge";
@@ -294,6 +324,8 @@ function TeamColumn({
   onClear: (index: number) => void;
   score: number;
   onScore: (value: number) => void;
+  /** This side stopped the game at seven, the other on nothing. */
+  onSevenNil: () => void;
 }) {
   const accent = tone === "win" ? "text-win" : "text-challenge";
   const border = tone === "win" ? "border-win/40" : "border-challenge/40";
@@ -363,13 +395,23 @@ function TeamColumn({
         </button>
       </div>
 
-      <button
-        type="button"
-        onClick={() => onScore(11)}
-        className="display mt-1.5 h-9 w-full rounded-lg border border-line text-xs tracking-[0.08em] text-ink-faint"
-      >
-        Setja 11
-      </button>
+      <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+        <button
+          type="button"
+          onClick={() => onScore(11)}
+          className="display h-9 rounded-lg border border-line text-xs tracking-[0.08em] text-ink-faint"
+        >
+          Setja 11
+        </button>
+        <button
+          type="button"
+          onClick={onSevenNil}
+          aria-label={`${label} vann 7–0`}
+          className="display tnum h-9 rounded-lg border border-line text-xs tracking-[0.08em] text-ink-faint"
+        >
+          7–0
+        </button>
+      </div>
     </div>
   );
 }

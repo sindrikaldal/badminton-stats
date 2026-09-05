@@ -5,6 +5,7 @@ import {
   type PlayerId,
   type Session,
   MIN_PAIR_MATCHES,
+  compareThrashing,
   didPlay,
   didWin,
   marginOf,
@@ -136,7 +137,7 @@ export function nightStats(session: Session): NightStats {
     lines,
     playerOfTheNight: bestOf(lines.filter((l) => l.qualified)),
     pairOfTheNight: pairOfTheNight(matches),
-    biggestWin: pick(matches, (a, b) => marginOf(a) - marginOf(b)),
+    biggestWin: pick(matches, compareThrashing),
     // Tightest margin, then the longer war: 15-13 over 11-9.
     closestGame: pick(
       matches,

@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { GATE_COOKIE } from "@/lib/gate";
+import { scoreProblem } from "@/lib/domain/types";
 import * as repo from "@/lib/repo";
 
 function revalidateAll() {
@@ -238,12 +239,9 @@ const matchSchema = z
   .refine((m) => new Set([...m.teamA, ...m.teamB]).size === 4, {
     message: "Sami leikmaður má ekki vera tvisvar í leiknum.",
   })
-  .refine((m) => m.scoreA !== m.scoreB, { message: "Leikur getur ekki endað jafn." })
-  .refine((m) => Math.max(m.scoreA, m.scoreB) >= 11, {
-    message: "Sigurvegari þarf a.m.k. 11 stig.",
-  })
-  .refine((m) => Math.abs(m.scoreA - m.scoreB) >= 2, {
-    message: "Það þarf tveggja stiga mun.",
+  .superRefine((m, ctx) => {
+    const problem = scoreProblem(m.scoreA, m.scoreB);
+    if (problem) ctx.addIssue({ code: "custom", message: problem });
   });
 
 function readMatch(formData: FormData) {

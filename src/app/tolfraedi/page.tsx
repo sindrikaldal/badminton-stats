@@ -305,7 +305,13 @@ function Records({
         <li key={record.kind} className="card p-4">
           <p className="eyebrow">{record.label}</p>
           <div className="mt-1 flex items-baseline justify-between gap-3">
-            <p className="display tnum text-3xl text-win">{record.value}</p>
+            <p
+              className={`display tnum text-3xl ${
+                record.kind === "most-seven-nil" ? "text-flame" : "text-win"
+              }`}
+            >
+              {record.value}
+            </p>
             <p className="text-right text-xs text-ink-faint">{record.detail}</p>
           </div>
           {record.players.length > 0 ? (

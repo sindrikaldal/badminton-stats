@@ -6,8 +6,10 @@ import {
   type PlayerId,
   type Session,
   MIN_PAIR_MATCHES,
+  compareThrashing,
   didPlay,
   didWin,
+  isSevenNil,
   losersOf,
   losingScore,
   marginOf,
@@ -34,6 +36,9 @@ export const MIN_FADE_SESSIONS = 4;
 
 /** Record in games that went past eleven. */
 export type DeuceRecord = { played: number; wins: number };
+
+/** Mercy-rule finishes: handed out, and suffered. */
+export type SevenNilRecord = { given: number; taken: number };
 
 export type SeasonFade = {
   first: HalfRecord;
@@ -65,6 +70,7 @@ export type PlayerStats = {
   attendanceStreak: number;
   qualified: boolean;
   deuce: DeuceRecord;
+  sevenNil: SevenNilRecord;
   /** Null until MIN_FADE_SESSIONS evenings are long enough to count. */
   fade: SeasonFade | null;
   /** Evenings long enough to count, whether or not that is yet enough. */
@@ -99,7 +105,8 @@ export type SeasonRecord = {
     | "longest-game"
     | "busiest-night"
     | "longest-personal-streak"
-    | "attendance-streak";
+    | "attendance-streak"
+    | "most-seven-nil";
   label: string;
   value: string;
   detail: string;
@@ -208,6 +215,7 @@ export function seasonStats(
     let pointsFor = 0;
     let pointsAgainst = 0;
     const deuce: DeuceRecord = { played: 0, wins: 0 };
+    const sevenNil: SevenNilRecord = { given: 0, taken: 0 };
 
     for (const match of matches) {
       const score = scoreFor(match, playerId);
@@ -220,6 +228,10 @@ export function seasonStats(
       if (reachedDeuce(match)) {
         deuce.played += 1;
         if (won) deuce.wins += 1;
+      }
+      if (isSevenNil(match)) {
+        if (won) sevenNil.given += 1;
+        else sevenNil.taken += 1;
       }
     }
 
@@ -242,6 +254,7 @@ export function seasonStats(
       attendanceStreak: longestRun.get(playerId) ?? 0,
       qualified: played >= qualifyThreshold && played > 0,
       deuce,
+      sevenNil,
       fade: fadeFrom(fades.get(playerId)),
       fadeSessions: fades.get(playerId)?.sessions ?? 0,
       nightsWon: nightsWon.get(playerId) ?? 0,
@@ -434,14 +447,17 @@ function seasonRecords(
   const sessionOf = (matchId: number) =>
     sessions.find((s) => s.matches.some((m) => m.id === matchId))?.id ?? null;
 
+  // Earliest wins a tie, so a record stands until it is actually beaten.
   const biggest = matches.reduce((best, m) =>
-    marginOf(m) > marginOf(best) ? m : best,
+    compareThrashing(m, best) > 0 ? m : best,
   );
   records.push({
     kind: "biggest-win",
     label: "Stærsti sigurinn",
     value: `${winningScore(biggest)}–${losingScore(biggest)}`,
-    detail: `${marginOf(biggest)} stiga munur`,
+    detail: isSevenNil(biggest)
+      ? "leikurinn stöðvaður"
+      : `${marginOf(biggest)} stiga munur`,
     sessionId: sessionOf(biggest.id),
     matchId: biggest.id,
     players: [...winnersOf(biggest)],
@@ -522,6 +538,27 @@ function seasonRecords(
       sessionId: null,
       matchId: null,
       players: kings,
+    });
+  }
+
+  // The mercy rule's own table: not who dished it out -- stærsti sigurinn
+  // already covers them -- but who keeps being on the receiving end.
+  const humbled = players.filter(
+    (p) => eligible.has(p.playerId) && p.sevenNil.taken > 0,
+  );
+  const mostTaken = Math.max(0, ...humbled.map((p) => p.sevenNil.taken));
+  if (mostTaken > 0) {
+    records.push({
+      kind: "most-seven-nil",
+      label: "Flest 7–0",
+      value: `${mostTaken}`,
+      detail: mostTaken === 1 ? "sinni stöðvaður á núlli" : "sinnum stöðvaður á núlli",
+      sessionId: null,
+      matchId: null,
+      players: humbled
+        .filter((p) => p.sevenNil.taken === mostTaken)
+        .map((p) => p.playerId)
+        .sort((a, b) => a - b),
     });
   }
 

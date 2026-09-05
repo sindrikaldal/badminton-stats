@@ -17,7 +17,7 @@ import {
   pairStreaksInSession,
   pairThatMustSplit,
 } from "@/lib/domain/streaks";
-import { winnersOf } from "@/lib/domain/types";
+import { isSevenNil, winnersOf } from "@/lib/domain/types";
 import * as repo from "@/lib/repo";
 
 export const dynamic = "force-dynamic";
@@ -120,6 +120,10 @@ export default async function TonightPage({
   const freshHonor = justPlayed
     ? honorFromMatch(session.matches, justPlayed)
     : null;
+  const freshMatch = justPlayed
+    ? session.matches.find((m) => m.id === justPlayed) ?? null
+    : null;
+  const freshShame = freshMatch && isSevenNil(freshMatch) ? freshMatch : null;
 
   const byId = new Map(players.map((p) => [p.id, p]));
   const attendees = session.attendees
@@ -156,6 +160,7 @@ export default async function TonightPage({
               currentStreak={current}
               honorsTonight={honors.length}
               celebrate={freshHonor}
+              shame={freshShame}
             />
 
             <SectionTitle>Staðan í kvöld</SectionTitle>

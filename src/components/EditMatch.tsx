@@ -4,7 +4,7 @@ import { useActionState, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { editMatch, removeMatch } from "@/app/actions";
 import { Avatar } from "./Avatar";
-import type { Match, Player, PlayerId } from "@/lib/domain/types";
+import { type Match, type Player, type PlayerId, scoreProblem } from "@/lib/domain/types";
 
 type Slots = [PlayerId | null, PlayerId | null, PlayerId | null, PlayerId | null];
 
@@ -32,7 +32,7 @@ export function EditMatch({
 
   const byId = new Map(candidates.map((p) => [p.id, p]));
   const complete = slots.every((s) => s !== null);
-  const problem = validateScore(scoreA, scoreB);
+  const problem = scoreProblem(scoreA, scoreB);
 
   const place = (playerId: PlayerId) =>
     setSlots((prev) => {
@@ -207,9 +207,3 @@ export function EditMatch({
   );
 }
 
-function validateScore(a: number, b: number): string | null {
-  if (a === b) return "Leikur getur ekki endað jafn.";
-  if (Math.max(a, b) < 11) return "Sigurvegari þarf a.m.k. 11 stig.";
-  if (Math.abs(a - b) < 2) return "Það þarf tveggja stiga mun.";
-  return null;
-}

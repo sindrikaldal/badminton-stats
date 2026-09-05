@@ -222,3 +222,13 @@ describe("kvöldparið", () => {
     expect(stats.pairOfTheNight?.played).toBe(3);
   });
 });
+
+describe("7-0 on the night", () => {
+  it("is the biggest win of the evening regardless of margin", () => {
+    const wide = won([KARI, ARNAR], [BIRKIR, GISLI], 11, 1);
+    const sevenNil = won([BIRKIR, GISLI], [KARI, ARNAR], 7, 0);
+    const stats = nightStats(night([KARI, ARNAR, BIRKIR, GISLI], [wide, sevenNil]));
+
+    expect(stats.biggestWin?.id).toBe(sevenNil.id);
+  });
+});

@@ -5,6 +5,7 @@ import {
   type Match,
   type Player,
   type PlayerId,
+  isSevenNil,
   losersOf,
   losingScore,
   marginOf,
@@ -89,7 +90,11 @@ export function NightSummary({
           <Award
             label="Stærsti skellurinn"
             value={scoreOf(stats.biggestWin)}
-            detail={`${marginOf(stats.biggestWin)} stiga munur`}
+            detail={
+              isSevenNil(stats.biggestWin)
+                ? "leikurinn stöðvaður"
+                : `${marginOf(stats.biggestWin)} stiga munur`
+            }
             who={names(winnersOf(stats.biggestWin))}
             beaten={names(losersOf(stats.biggestWin))}
           />

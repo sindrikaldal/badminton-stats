@@ -31,6 +31,12 @@ Season  →  Session  →  Match
 
 - A game is played **to 11, win by 2, no cap.** 15–13 is legal and should be
   celebrated as a marathon.
+- **7–0 ends the game on the spot.** It is the only legal final score short of
+  eleven, and the only one with a loser on nil. Real points count in every
+  tally (7 for, 0 against), but a 7–0 outranks any margin for "biggest win",
+  the losers get a full-screen shaming, and each player carries a count of
+  7–0s given and taken. Guests are counted but never named by the
+  "Flest 7–0" record.
 - **Final score entry only.** No rally-by-rally scoring, no match timer, no
   serve tracking. You play the game as normal, then tap in `11–7` afterwards.
 - **Winners keep the court.** Next-match setup pre-fills the winning pair.
@@ -64,7 +70,8 @@ Available per-season and all-time.
 - **Pair chemistry** — best duo records when playing together.
 - **Head-to-head** — record against each other player, whenever on opposing
   sides.
-- **Records** — biggest thrashing, longest game, most matches in a night.
+- **Records** — biggest thrashing (a 7–0 always wins it), longest game, most
+  matches in a night, most 7–0s suffered.
 
 ## Stack
 

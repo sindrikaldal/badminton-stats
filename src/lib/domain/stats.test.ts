@@ -293,3 +293,115 @@ describe("mætingarkóngur", () => {
     expect(record?.value).toBe("3");
   });
 });
+
+describe("7-0", () => {
+  const recordOf = (
+    stats: ReturnType<typeof seasonStats>,
+    kind: string,
+  ) => stats.records.find((r) => r.kind === kind);
+
+  it("always takes stærsti sigurinn, even against a wider margin", () => {
+    const stats = seasonStats(
+      [
+        session(1, "2026-01-07", [
+          won([KARI, ARNAR], [BIRKIR, GISLI], 11, 1),
+          won([BIRKIR, GISLI], [KARI, ARNAR], 7, 0),
+        ]),
+      ],
+      ROSTER,
+    );
+
+    const biggest = recordOf(stats, "biggest-win");
+    expect(biggest?.value).toBe("7–0");
+    expect(biggest?.players).toEqual([BIRKIR, GISLI]);
+  });
+
+  it("gives the record to the earliest of several 7-0s", () => {
+    const first = won([KARI, ARNAR], [BIRKIR, GISLI], 7, 0);
+    const second = won([BIRKIR, GISLI], [KARI, ARNAR], 7, 0);
+    const stats = seasonStats(
+      [session(1, "2026-01-07", [first, second])],
+      ROSTER,
+    );
+
+    expect(recordOf(stats, "biggest-win")?.matchId).toBe(first.id);
+  });
+
+  it("keeps the real points in the tallies", () => {
+    const stats = seasonStats(
+      [session(1, "2026-01-07", [won([KARI, ARNAR], [BIRKIR, GISLI], 7, 0)])],
+      ROSTER,
+    );
+    const kari = stats.players.find((p) => p.playerId === KARI);
+
+    expect(kari?.pointsFor).toBe(7);
+    expect(kari?.pointsAgainst).toBe(0);
+    expect(kari?.avgMargin).toBe(7);
+  });
+
+  it("counts 7-0s given and taken per player", () => {
+    const stats = seasonStats(
+      [
+        session(1, "2026-01-07", [
+          won([KARI, ARNAR], [BIRKIR, GISLI], 7, 0),
+          won([KARI, GISLI], [ARNAR, BIRKIR], 7, 0),
+          won([KARI, ARNAR], [BIRKIR, GISLI], 11, 3),
+        ]),
+      ],
+      ROSTER,
+    );
+    const by = (id: PlayerId) => stats.players.find((p) => p.playerId === id);
+
+    expect(by(KARI)?.sevenNil).toEqual({ given: 2, taken: 0 });
+    expect(by(BIRKIR)?.sevenNil).toEqual({ given: 0, taken: 2 });
+    expect(by(ARNAR)?.sevenNil).toEqual({ given: 1, taken: 1 });
+  });
+
+  it("has no flest 7-0 record until one has happened", () => {
+    const stats = seasonStats(
+      [session(1, "2026-01-07", [won([KARI, ARNAR], [BIRKIR, GISLI])])],
+      ROSTER,
+    );
+
+    expect(recordOf(stats, "most-seven-nil")).toBeUndefined();
+  });
+
+  it("names whoever has taken the most 7-0s, shared on a tie", () => {
+    const stats = seasonStats(
+      [
+        session(1, "2026-01-07", [
+          won([KARI, ARNAR], [BIRKIR, GISLI], 7, 0),
+          won([KARI, GISLI], [ARNAR, BIRKIR], 7, 0),
+        ]),
+      ],
+      ROSTER,
+    );
+
+    const record = recordOf(stats, "most-seven-nil");
+    expect(record?.value).toBe("2");
+    expect(record?.players).toEqual([BIRKIR]);
+
+    const tied = seasonStats(
+      [session(1, "2026-01-07", [won([KARI, ARNAR], [BIRKIR, GISLI], 7, 0)])],
+      ROSTER,
+    );
+    expect(recordOf(tied, "most-seven-nil")?.players).toEqual([BIRKIR, GISLI]);
+  });
+
+  it("never names a guest for flest 7-0, though the guest's own count stands", () => {
+    const roster = [...ROSTER, DAVID];
+    const stats = seasonStats(
+      [
+        session(1, "2026-01-07", [
+          won([KARI, ARNAR], [DAVID, GISLI], 7, 0),
+          won([KARI, ARNAR], [DAVID, BIRKIR], 7, 0),
+        ]),
+      ],
+      roster,
+      new Set(ROSTER),
+    );
+
+    expect(recordOf(stats, "most-seven-nil")?.players).toEqual([BIRKIR, GISLI]);
+    expect(stats.players.find((p) => p.playerId === DAVID)?.sevenNil.taken).toBe(2);
+  });
+});

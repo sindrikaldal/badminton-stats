@@ -113,8 +113,11 @@ vercel deploy --prod
 
 ### Rules encoded in the app
 
-- A game runs **to 11, win by 2, no cap**. Enforced both in zod and as a check
-  constraint, so a bad score cannot reach the table by any route.
+- A game runs **to 11, win by 2, no cap** — or ends the moment one side
+  reaches **7–0**. Both are enforced in `scoreProblem` (shared by the score pad,
+  the edit form and the server action) and as a check constraint, so a bad
+  score cannot reach the table by any route. Existing databases need
+  `db/migrations/002-seven-nil.sql` run once.
 - **Winners keep the court** — pre-filled on the next-match form.
 - A pair winning **three straight** earns the honor and must split. The app
   **warns but never blocks** if you pair them again: rotation is decided by

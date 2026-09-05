@@ -4,6 +4,7 @@ import {
   type Match,
   type Player,
   type PlayerId,
+  isSevenNil,
   losersOf,
   losingScore,
   winnersOf,
@@ -38,6 +39,7 @@ export function MatchList({
         const winners = winnersOf(match);
         const losers = losersOf(match);
         const isHonor = honorMatchIds.has(match.id);
+        const sevenNil = isSevenNil(match);
         const involvesMe =
           highlight !== undefined &&
           [...winners, ...losers].includes(highlight);
@@ -55,17 +57,24 @@ export function MatchList({
                     ? dates.get(match.sessionId)
                     : `Leikur ${match.seq}`}
                 </span>
-                {isHonor ? (
-                  <span className="display rounded border border-flame/50 bg-flame/10 px-2 py-0.5 text-[11px] tracking-[0.1em] text-flame">
-                    Þrír í röð
-                  </span>
-                ) : involvesMe ? (
-                  <span
-                    className={`display text-[11px] tracking-[0.1em] ${iWon ? "text-win" : "text-ink-faint"}`}
-                  >
-                    {iWon ? "Sigur" : "Tap"}
-                  </span>
-                ) : null}
+                <span className="flex items-center gap-1.5">
+                  {sevenNil ? (
+                    <span className="display tnum rounded bg-ink px-2 py-0.5 text-[11px] tracking-[0.1em] text-canvas">
+                      7–0
+                    </span>
+                  ) : null}
+                  {isHonor ? (
+                    <span className="display rounded border border-flame/50 bg-flame/10 px-2 py-0.5 text-[11px] tracking-[0.1em] text-flame">
+                      Þrír í röð
+                    </span>
+                  ) : involvesMe ? (
+                    <span
+                      className={`display text-[11px] tracking-[0.1em] ${iWon ? "text-win" : "text-ink-faint"}`}
+                    >
+                      {iWon ? "Sigur" : "Tap"}
+                    </span>
+                  ) : null}
+                </span>
               </div>
 
               <div className="divide-y divide-line/60">

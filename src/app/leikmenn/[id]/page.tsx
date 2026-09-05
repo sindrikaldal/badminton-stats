@@ -195,6 +195,18 @@ export default async function PlayerPage({
               detail={`${mine.sessionsAttended} af ${stats.totalSessions} kvöldum`}
               tone="challenge"
             />
+            <Tile
+              label="7–0"
+              value={`${mine.sevenNil.given}–${mine.sevenNil.taken}`}
+              detail="gefin – fengin"
+              tone={
+                mine.sevenNil.taken > mine.sevenNil.given
+                  ? "flame"
+                  : mine.sevenNil.given > 0
+                    ? "win"
+                    : "muted"
+              }
+            />
             {mine.deuce.played >= MIN_DEUCE_GAMES ? (
               <Tile
                 label="Framlengingar"
