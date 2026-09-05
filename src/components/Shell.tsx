@@ -9,8 +9,12 @@ export function Shell({
   /** Small line under the wordmark: the live season or evening. */
   status?: string;
 }) {
+  // A flex column rather than a fixed nav: on first launch as a home-screen
+  // app, iOS positions fixed elements against a stale viewport and the nav
+  // lands below the fold until something scrolls. In flow, with the main area
+  // taking the slack, it is laid out with the content and stuck to the bottom.
   return (
-    <div className="stringbed min-h-dvh">
+    <div className="stringbed flex min-h-dvh flex-col">
       <header
         className="sticky top-0 z-30 border-b border-line bg-canvas/90 backdrop-blur"
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
@@ -32,7 +36,9 @@ export function Shell({
         </div>
       </header>
 
-      <main className="mx-auto max-w-[480px] px-4 pt-4 pb-28">{children}</main>
+      <main className="mx-auto w-full max-w-[480px] flex-1 px-4 pt-4 pb-6">
+        {children}
+      </main>
 
       <BottomNav />
     </div>
