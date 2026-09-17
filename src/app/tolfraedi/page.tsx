@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { EmptyState, SectionTitle, Shell } from "@/components/Shell";
 import {
+  type LeaderboardSort,
   MIN_PAIR_MATCHES,
   formatPercent,
   rankedLeaderboard,
@@ -19,13 +20,34 @@ const TABS = [
   { key: "met", label: "Met & stuð" },
 ] as const;
 
+const SORTS: { key: string; sort: LeaderboardSort; label: string }[] = [
+  { key: "hlutfall", sort: "winRate", label: "Sigurhlutfall" },
+  { key: "sigrar", sort: "wins", label: "Sigrar" },
+];
+
+/**
+ * Every link on the page carries the whole view -- tab, season and sort -- so
+ * switching one never resets another. Defaults are left out to keep the URLs
+ * short.
+ */
+function hrefFor(view: { flipi: string; timabil?: string; rada?: string }) {
+  const params = new URLSearchParams();
+  if (view.flipi !== "stada") params.set("flipi", view.flipi);
+  if (view.timabil) params.set("timabil", view.timabil);
+  if (view.rada && view.rada !== SORTS[0].key) params.set("rada", view.rada);
+  const query = params.toString();
+  return `/tolfraedi${query ? `?${query}` : ""}`;
+}
+
 export default async function StatsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ flipi?: string; timabil?: string }>;
+  searchParams: Promise<{ flipi?: string; timabil?: string; rada?: string }>;
 }) {
-  const { flipi, timabil } = await searchParams;
+  const { flipi, timabil, rada } = await searchParams;
   const tab = TABS.find((t) => t.key === flipi)?.key ?? "stada";
+  const sort = SORTS.find((s) => s.key === rada) ?? SORTS[0];
+  const view = { flipi: tab, timabil, rada: sort.key };
 
   const [seasons, players] = await Promise.all([
     repo.getSeasons(),
@@ -75,7 +97,7 @@ export default async function StatsPage({
           {seasons.map((option) => (
             <SeasonChip
               key={option.id}
-              href={`/tolfraedi?flipi=${tab}&timabil=${option.id}`}
+              href={hrefFor({ ...view, timabil: String(option.id) })}
               active={!allTime && option.id === season.id}
             >
               {option.name}
@@ -83,7 +105,7 @@ export default async function StatsPage({
           ))}
           {seasons.length > 1 ? (
             <SeasonChip
-              href={`/tolfraedi?flipi=${tab}&timabil=allt`}
+              href={hrefFor({ ...view, timabil: "allt" })}
               active={allTime}
             >
               Frá upphafi
@@ -96,7 +118,7 @@ export default async function StatsPage({
         {TABS.map((option) => (
           <Link
             key={option.key}
-            href={`/tolfraedi?flipi=${option.key}${timabil ? `&timabil=${timabil}` : ""}`}
+            href={hrefFor({ ...view, flipi: option.key })}
             className={`display flex-1 rounded-lg py-2.5 text-center text-sm tracking-[0.04em] ${
               option.key === tab
                 ? "bg-challenge text-canvas"
@@ -113,7 +135,7 @@ export default async function StatsPage({
           <EmptyState title="Enginn leikur skráður ennþá" />
         </div>
       ) : tab === "stada" ? (
-        <Leaderboard stats={stats} byId={byId} />
+        <Leaderboard stats={stats} byId={byId} sort={sort} view={view} />
       ) : tab === "por" ? (
         <Pairs stats={stats} byId={byId} />
       ) : (
@@ -149,25 +171,52 @@ function SeasonChip({
 function Leaderboard({
   stats,
   byId,
+  sort,
+  view,
 }: {
   stats: ReturnType<typeof seasonStats>;
   byId: Map<number, Player>;
+  sort: (typeof SORTS)[number];
+  view: { flipi: string; timabil?: string; rada?: string };
 }) {
-  const rows = rankedLeaderboard(stats.players).filter((p) => p.played > 0);
+  const byWins = sort.sort === "wins";
+  const rows = rankedLeaderboard(stats.players, sort.sort).filter(
+    (p) => p.played > 0,
+  );
   const medals = ["#f0b429", "#c0c8d4", "#c98b52"];
 
   return (
     <>
-      <p className="mt-4 text-xs text-ink-faint">
-        Raðað eftir sigurhlutfalli. Þarf {stats.qualifyThreshold} leiki til að
-        teljast með.
-      </p>
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <p className="text-xs text-ink-faint">
+          {byWins
+            ? "Raðað eftir sigrum."
+            : `Raðað eftir sigurhlutfalli. Þarf ${stats.qualifyThreshold} leiki til að teljast með.`}
+        </p>
+        <div className="flex shrink-0 gap-1.5" role="group" aria-label="Röðun">
+          {SORTS.map((option) => (
+            <Link
+              key={option.key}
+              href={hrefFor({ ...view, rada: option.key })}
+              aria-current={option.key === sort.key ? "true" : undefined}
+              className={`display rounded-full border px-2.5 py-1 text-[11px] tracking-[0.06em] ${
+                option.key === sort.key
+                  ? "border-challenge/60 bg-challenge/10 text-challenge"
+                  : "border-line bg-surface-raised text-ink-faint"
+              }`}
+            >
+              {option.label}
+            </Link>
+          ))}
+        </div>
+      </div>
 
       <ul className="mt-3 space-y-2">
         {rows.map((row, index) => {
           const player = byId.get(row.playerId);
           if (!player) return null;
-          const rank = row.qualified ? index + 1 : null;
+          // A count of wins needs no qualification bar, so everyone ranks.
+          const rank = byWins || row.qualified ? index + 1 : null;
 
           return (
             <li key={row.playerId}>
@@ -214,18 +263,31 @@ function Leaderboard({
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <p
-                    className={`display tnum text-2xl ${
-                      row.qualified
-                        ? winRateTone(row.winRate, row.played)
-                        : "text-ink-faint"
-                    }`}
-                  >
-                    {formatPercent(row.winRate)}
-                  </p>
-                  <p className="text-[10px] text-ink-faint">
-                    {row.played} leikir
-                  </p>
+                  {byWins ? (
+                    <>
+                      <p className="display tnum text-2xl text-win">
+                        {row.wins}
+                      </p>
+                      <p className="text-[10px] text-ink-faint">
+                        {formatPercent(row.winRate)} · {row.played} leikir
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p
+                        className={`display tnum text-2xl ${
+                          row.qualified
+                            ? winRateTone(row.winRate, row.played)
+                            : "text-ink-faint"
+                        }`}
+                      >
+                        {formatPercent(row.winRate)}
+                      </p>
+                      <p className="text-[10px] text-ink-faint">
+                        {row.played} leikir
+                      </p>
+                    </>
+                  )}
                 </div>
               </Link>
             </li>

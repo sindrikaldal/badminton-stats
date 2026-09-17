@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { nemesisFor, seasonStats } from "./stats";
+import { nemesisFor, rankedLeaderboard, seasonStats } from "./stats";
 import type { Match, PlayerId, Session } from "./types";
 
 const KARI = 1;
@@ -155,7 +155,7 @@ describe("maður kvöldsins, over a season", () => {
   });
 });
 
-describe("dofnaði, over a season", () => {
+describe("kólnaði, over a season", () => {
   it("adds up each evening's halves rather than splitting the season", () => {
     const kari = statsFor(
       [
@@ -403,5 +403,40 @@ describe("7-0", () => {
 
     expect(recordOf(stats, "most-seven-nil")?.players).toEqual([BIRKIR, GISLI]);
     expect(stats.players.find((p) => p.playerId === DAVID)?.sevenNil.taken).toBe(2);
+  });
+});
+
+describe("leaderboard order", () => {
+  // Kári: 2 wins in 2 (100%). Birkir: 3 wins in 5 (60%). Arnar: 1 in 1 (100%).
+  const evening = session(1, "2026-01-07", [
+    won([KARI, ARNAR], [BIRKIR, GISLI]),
+    won([KARI, DAVID], [BIRKIR, GISLI]),
+    won([BIRKIR, GISLI], [DAVID, STEFAN]),
+    won([BIRKIR, GISLI], [DAVID, STEFAN]),
+    won([BIRKIR, GISLI], [DAVID, STEFAN]),
+  ]);
+  const roster = [KARI, ARNAR, BIRKIR, GISLI, DAVID, STEFAN];
+  const stats = seasonStats([evening], roster);
+  const order = (rows: { playerId: PlayerId }[]) => rows.map((r) => r.playerId);
+
+  it("ranks by win rate by default, qualified players first", () => {
+    // Five games, so two are needed to qualify: Arnar's 100% from one game
+    // sits below Birkir's 60% from five.
+    const rows = rankedLeaderboard(stats.players).filter((p) => p.played > 0);
+    expect(order(rows).slice(0, 3)).toEqual([KARI, BIRKIR, GISLI]);
+    expect(order(rows)).toContain(ARNAR);
+    expect(order(rows).indexOf(ARNAR)).toBeGreaterThan(order(rows).indexOf(BIRKIR));
+  });
+
+  it("ranks by total wins when asked, ignoring the qualification bar", () => {
+    const rows = rankedLeaderboard(stats.players, "wins").filter((p) => p.played > 0);
+    // Birkir and Gísli have three each; Kári two; Arnar and Davíð one each.
+    expect(order(rows).slice(0, 3)).toEqual([BIRKIR, GISLI, KARI]);
+  });
+
+  it("breaks a tie on wins by win rate", () => {
+    const rows = rankedLeaderboard(stats.players, "wins");
+    // Arnar 1 of 1 beats Davíð 1 of 4.
+    expect(order(rows).indexOf(ARNAR)).toBeLessThan(order(rows).indexOf(DAVID));
   });
 });

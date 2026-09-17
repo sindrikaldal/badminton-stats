@@ -334,12 +334,30 @@ export function nemesisFor(
   );
 }
 
+/** How the leaderboard is ordered. */
+export type LeaderboardSort = "winRate" | "wins";
+
 /**
- * Ranked for display: qualified players by win rate, then everyone else. Ties
- * break on total wins, so volume beats a thin sample at the same percentage.
+ * Ranked for display.
+ *
+ * By win rate: qualified players first, then everyone else. Ties break on
+ * total wins, so volume beats a thin sample at the same percentage.
+ *
+ * By wins: everyone together, most wins first. The qualification bar exists to
+ * keep a thin sample off the top of a percentage table; a count of wins is
+ * volume already, so it needs no such guard. Ties break on win rate, so the
+ * same wins from fewer games ranks higher.
  */
-export function rankedLeaderboard(stats: PlayerStats[]): PlayerStats[] {
+export function rankedLeaderboard(
+  stats: PlayerStats[],
+  by: LeaderboardSort = "winRate",
+): PlayerStats[] {
   return [...stats].sort((a, b) => {
+    if (by === "wins") {
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+      return b.avgMargin - a.avgMargin;
+    }
     if (a.qualified !== b.qualified) return a.qualified ? -1 : 1;
     if (b.winRate !== a.winRate) return b.winRate - a.winRate;
     if (b.wins !== a.wins) return b.wins - a.wins;

@@ -205,7 +205,7 @@ function Swings({
   return (
     <div className="card mt-2 divide-y divide-line/60 px-4 py-2">
       {row(stats.warmedUp, "Hitnaði", "text-win")}
-      {row(stats.faded, "Dofnaði", "text-flame")}
+      {row(stats.faded, "Kólnaði", "text-flame")}
     </div>
   );
 }

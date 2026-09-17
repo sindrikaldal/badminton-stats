@@ -84,7 +84,7 @@ describe("maður kvöldsins", () => {
   });
 });
 
-describe("dofnaði og hitnaði", () => {
+describe("kólnaði og hitnaði", () => {
   it("splits a player's own matches, so a late arrival still has two halves", () => {
     // Davíð plays only games 5-8, entirely inside the evening's second half.
     // Splitting the evening would leave him no first half at all.

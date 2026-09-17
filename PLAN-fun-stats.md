@@ -72,7 +72,7 @@ Contents:
 | **Stærsti skellurinn** | Biggest margin of the night, naming winners and losers. |
 | **Jafnasti leikurinn** | Smallest margin, tie broken by **most total points** — so a 15–13 beats an 11–9. Both were tight; one was a war. |
 | **Kvöldparið** | Best duo with at least `MIN_PAIR_MATCHES` (3) games together. Win rate, then games. Hidden if no pair qualifies. |
-| **Dofnaði / Hitnaði** | Both ends of the same tile — a stat with only a loser reads meaner than one that swings both ways. |
+| **Kólnaði / Hitnaði** | Both ends of the same tile — a stat with only a loser reads meaner than one that swings both ways. |
 | **Roster lines** | Every attendee: `3S–2T · lengsta hrina 2 · +1.4`. |
 
 *Kvöldparið* hides when a duo shares maður kvöldsins and is also the best pair:
@@ -85,7 +85,7 @@ mention and no reason to look. A closing roster where everyone has a row makes
 the card about the evening rather than about the winner — and it is where the
 light roast lives naturally, since a row reading 0–5 needs no caption.
 
-### Dofnaði / Hitnaði
+### Kólnaði / Hitnaði
 
 - Split **each player's own matches**, not the evening. Someone who arrived for
   game 5 still has a first and second half.
@@ -99,7 +99,7 @@ light roast lives naturally, since a row reading 0–5 needs no caption.
   thing we already refused to do for the award. The tile must render
   "Davíð & Jón" as happily as one name.
 - A fade needs a **strictly negative** delta. On a night where everyone
-  improved, the least-improved player is not *sá sem dofnaði*; the tile is
+  improved, the least-improved player is not *sá sem kólnaði*; the tile is
   simply empty.
 - The split is stored on **every line**, not just the two extremes, so any
   player's halves can be shown wherever it is useful.
@@ -113,7 +113,7 @@ group records become more cards in *Met & stuð*.
 |---|---|---|
 | **Erkifjandi** | Player page | The opponent you have the worst record against — lowest win rate, tie broken by more meetings. Minimum **8 meetings**; you face each regular 2–3 times an evening, so it lands around evening four. The exact mirror of *Besti meðspilari*, off the existing `headToHead`. |
 | **Framlengingar** | Player page | W–L in games where the **losing** score reached 10. Honest "clutch" — 12–10 counts, 11–9 does not. Minimum **5** such games. |
-| **Dofnaði (season)** | Player page | Aggregate each evening's halves across the season. Do **not** split the season itself, or you are measuring November against February rather than fresh against tired. Minimum **4** evenings of ≥ 4 matches. |
+| **Kólnaði (season)** | Player page | Aggregate each evening's halves across the season. Do **not** split the season itself, or you are measuring November against February rather than fresh against tired. Minimum **4** evenings of ≥ 4 matches. |
 | **Mætingarkóngur** | Met & stuð | Longest run of consecutive evenings attended. The summer cannot break it — between seasons there are no evenings, so a live streak carries across. The only thing that ends it is an evening the group played and you did not. Hidden while *everyone* is on the same run: early in a season nobody has missed anything, and a crown the whole group shares distinguishes no one. It appears the week someone sleeps in. |
 | **`4× maður kvöldsins`** | Player page + leaderboard row | A badge, not a named noun — "Kvöldsigrar" reads as "wins tonight", which is precisely what it is not. Shared awards count for everyone who shared. |
 
@@ -126,7 +126,7 @@ group records become more cards in *Met & stuð*.
   count of a nightly award, so the season pass calls `nightStats` once per
   session — the same pattern as the existing per-session `pairStreaksInSession`
   call. Free at a few hundred matches.
-- **New fields on `PlayerStats`**: framlengingar record, the dofnaði split,
+- **New fields on `PlayerStats`**: framlengingar record, the kólnaði split,
   attendance streak, nights won. Both the leaderboard and the player page
   already read that object; four more numbers per player cost nothing next to
   loading the season into memory.
@@ -147,7 +147,7 @@ group records become more cards in *Met & stuð*.
 Beside `streaks.test.ts`, covering the four rules that are not obvious from
 reading the code:
 
-1. **Dofnaði splitting** — odd counts drop the middle game, split is per-player
+1. **Kólnaði splitting** — odd counts drop the middle game, split is per-player
    not per-evening, suppressed under 4 matches.
 2. **Maður kvöldsins** — the adaptive bar excludes a 3–0 who barely played, and
    a genuine three-way tie returns all three rather than picking one.
@@ -164,7 +164,7 @@ one-line reductions where the test would restate the implementation.
 2. ~~Staðan í kvöld, under the log form.~~ — **done**.
 3. ~~Kvöldið í tölum on the closed session view.~~ — **done**.
 4. ~~Season fields on `PlayerStats` + tests.~~ — **done**.
-5. ~~Player page: erkifjandi, framlengingar, dofnaði, badge — **each shipping
+5. ~~Player page: erkifjandi, framlengingar, kólnaði, badge — **each shipping
    with its countdown teaser**, not as a later pass.~~ — **done**. Every one of
    these is empty until roughly December, so without the countdown the whole
    step looks like nothing happened, and a step that looks like nothing

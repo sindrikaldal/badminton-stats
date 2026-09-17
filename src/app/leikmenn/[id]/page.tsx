@@ -245,7 +245,7 @@ export default async function PlayerPage({
             ) : (
               <Tile
                 compact
-                label="Dofnaði"
+                label="Kólnaði"
                 value="–"
                 detail={waiting(
                   MIN_FADE_SESSIONS - mine.fadeSessions,
@@ -352,7 +352,7 @@ function waiting(short: number, unit: (n: number) => string): string {
 }
 
 function fadeLabel(delta: number): string {
-  if (delta < 0) return "Dofnaði";
+  if (delta < 0) return "Kólnaði";
   if (delta > 0) return "Hitnaði";
   return "Jafn út kvöldið";
 }
