@@ -342,24 +342,41 @@ export async function setAttendees(
   });
 }
 
+/**
+ * Logs a match only if the evening's latest one is still `afterMatchId` (0 for
+ * none) -- the one the phone was looking at. Returns null when another phone
+ * got there first, which is almost always the same game entered twice.
+ */
 export async function addMatch(input: {
   sessionId: number;
+  afterMatchId: number;
   teamA: [PlayerId, PlayerId];
   teamB: [PlayerId, PlayerId];
   scoreA: number;
   scoreB: number;
-}): Promise<Match> {
-  const [row] = await sql<MatchRow[]>`
-    INSERT INTO matches (session_id, seq, a1, a2, b1, b2, score_a, score_b)
-    VALUES (
-      ${input.sessionId},
-      (SELECT COALESCE(MAX(seq), 0) + 1 FROM matches WHERE session_id = ${input.sessionId}),
-      ${input.teamA[0]}, ${input.teamA[1]}, ${input.teamB[0]}, ${input.teamB[1]},
-      ${input.scoreA}, ${input.scoreB}
-    )
-    RETURNING id, session_id, seq, a1, a2, b1, b2, score_a, score_b
-  `;
-  return toMatch(row);
+}): Promise<Match | null> {
+  try {
+    const [row] = await sql<MatchRow[]>`
+      WITH latest AS (
+        SELECT id, seq FROM matches WHERE session_id = ${input.sessionId}
+        ORDER BY seq DESC LIMIT 1
+      )
+      INSERT INTO matches (session_id, seq, a1, a2, b1, b2, score_a, score_b)
+      SELECT
+        ${input.sessionId},
+        COALESCE((SELECT seq FROM latest), 0) + 1,
+        ${input.teamA[0]}, ${input.teamA[1]}, ${input.teamB[0]}, ${input.teamB[1]},
+        ${input.scoreA}, ${input.scoreB}
+      WHERE COALESCE((SELECT id FROM latest), 0) = ${input.afterMatchId}
+      RETURNING id, session_id, seq, a1, a2, b1, b2, score_a, score_b
+    `;
+    return row ? toMatch(row) : null;
+  } catch (error) {
+    // Two phones in the same instant both pass the check and take the same
+    // seq; the unique index turns the slower one away.
+    if ((error as { code?: string }).code === "23505") return null;
+    throw error;
+  }
 }
 
 export async function getMatch(id: number): Promise<Match | null> {

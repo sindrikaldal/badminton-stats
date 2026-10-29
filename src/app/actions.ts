@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { refresh, revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -275,7 +275,21 @@ export async function logMatch(
     };
   }
 
-  const match = await repo.addMatch({ sessionId, ...parsed.data });
+  const match = await repo.addMatch({
+    sessionId,
+    afterMatchId: Number(formData.get("lastMatchId")) || 0,
+    ...parsed.data,
+  });
+  if (!match) {
+    // Hand back the fresh evening with the refusal, so the game that beat
+    // this one is on screen before anyone presses again.
+    refresh();
+    return {
+      ok: false,
+      error:
+        "Annar sími skráði leik rétt á undan. Athugaðu hvort það sé sami leikur áður en þú skráir aftur.",
+    };
+  }
   revalidateAll();
   // The session page decides whether this completed a three-in-a-row.
   redirect(`/?kvold=${sessionId}&nyr=${match.id}`);

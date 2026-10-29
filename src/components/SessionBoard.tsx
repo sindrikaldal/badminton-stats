@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { logMatch } from "@/app/actions";
 import { Avatar } from "./Avatar";
 import { Celebration } from "./Celebration";
+import { MatchList } from "./MatchList";
 import { SevenNil } from "./SevenNil";
 import {
   HONOR_STREAK_LENGTH,
@@ -31,6 +32,7 @@ export function SessionBoard({
   honorsTonight,
   celebrate,
   shame,
+  justLogged,
 }: {
   sessionId: number;
   attendees: Player[];
@@ -42,6 +44,8 @@ export function SessionBoard({
   celebrate: Honor | null;
   /** The match just logged, if it ended 7-0. Shown before any honor. */
   shame: Match | null;
+  /** The match this phone just logged (`?nyr=`), so it is not announced as someone else's. */
+  justLogged: number | null;
 }) {
   const [state, action, pending] = useActionState(logMatch, null);
 
@@ -51,22 +55,40 @@ export function SessionBoard({
   useEffect(() => setShaming(shame !== null), [shame?.id]);
 
   // Winners keep the court, so they start on side A -- unless they have just
-  // been split, in which case nobody is pre-filled.
+  // been split, in which case nobody is pre-filled. Keyed on the ids, not the
+  // array: every background refresh delivers a fresh one, and resetting on it
+  // would wipe a half-entered game every few seconds.
+  const [held1, held2] = holdingPair ?? [null, null];
   const initial = useMemo<Slots>(() => {
-    if (!holdingPair || mustSplit) return EMPTY;
-    return [holdingPair[0], holdingPair[1], null, null];
-  }, [holdingPair, mustSplit]);
+    if (held1 === null || held2 === null || mustSplit) return EMPTY;
+    return [held1, held2, null, null];
+  }, [held1, held2, mustSplit]);
 
   const [slots, setSlots] = useState<Slots>(initial);
   const [scoreA, setScoreA] = useState(11);
   const [scoreB, setScoreB] = useState(0);
+
+  const lastMatchId = matches.at(-1)?.id ?? 0;
 
   // A logged match re-renders the page; start the next one clean.
   useEffect(() => {
     setSlots(initial);
     setScoreA(11);
     setScoreB(0);
-  }, [initial, matches.length]);
+  }, [initial, lastMatchId]);
+
+  // A game that lands from another phone wipes the form just like our own
+  // would, so say whose it was -- or the same game gets entered again.
+  const seenMatchId = useRef(lastMatchId);
+  const [elsewhereId, setElsewhereId] = useState<number | null>(null);
+  useEffect(() => {
+    // Ids only grow, so a drop means a deletion, not a new game.
+    if (lastMatchId > seenMatchId.current) {
+      setElsewhereId(lastMatchId === justLogged ? null : lastMatchId);
+    }
+    seenMatchId.current = lastMatchId;
+  }, [lastMatchId, justLogged]);
+  const loggedElsewhere = matches.find((m) => m.id === elsewhereId) ?? null;
 
   const byId = useMemo(
     () => new Map(attendees.map((p) => [p.id, p])),
@@ -152,6 +174,15 @@ export function SessionBoard({
           tone={honorsTonight > 0 ? "flame" : undefined}
         />
       </div>
+
+      {loggedElsewhere ? (
+        <div className="mt-3">
+          <p className="eyebrow mb-2 text-challenge">
+            Skráður í öðrum síma rétt í þessu
+          </p>
+          <MatchList matches={[loggedElsewhere]} players={attendees} />
+        </div>
+      ) : null}
 
       <form action={action} className="card mt-3 overflow-hidden">
         <div className="flex items-center justify-between border-b border-line px-4 py-3">
@@ -252,6 +283,7 @@ export function SessionBoard({
           ) : null}
 
           <input type="hidden" name="sessionId" value={sessionId} />
+          <input type="hidden" name="lastMatchId" value={lastMatchId} />
           <input type="hidden" name="a1" value={slots[0] ?? ""} />
           <input type="hidden" name="a2" value={slots[1] ?? ""} />
           <input type="hidden" name="b1" value={slots[2] ?? ""} />
