@@ -222,7 +222,7 @@ A sports-hall palette: pale floor, white panels, mat green, line-tape white, shu
 
 ## Layout
 
-A single centered column, max 480px wide, with 16px page gutters; the header and an ink tab bar are sticky and respect safe-area insets. The court is the only full-bleed element: it breaks out of the gutter (-16px) so the green mat runs edge to edge. Sections separate with 32px above section titles and 12px below. Lists are single cards divided by seams, rows at 12px by 10px. Chip groups and badge groups gap at 6px. Primary actions are full width and tall (52–60px); every touch target is at least 44px. Entry flows top to bottom: pick players, set score on the court, log with the yellow button.
+A single centered column, max 480px wide, with 16px page gutters; the shell is pinned to the screen with the header on top and an ink tab bar at the bottom, and only the page between them scrolls. The court is the only full-bleed element: it breaks out of the gutter (-16px) so the green mat runs edge to edge. Sections separate with 32px above section titles and 12px below. Lists are single cards divided by seams, rows at 12px by 10px. Chip groups and badge groups gap at 6px. Primary actions are full width and tall (52–60px); every touch target is at least 44px. Entry flows top to bottom: pick players, set score on the court, log with the yellow button.
 
 ## Elevation & Depth
 
@@ -270,7 +270,7 @@ Small 4px-corner display-type tags: yellow with ink for runs and "Þrír í rö�
 - **Error:** a danger-red line of body text below the field.
 
 ### Navigation
-The tab bar is an ink band, 64px tall, four equal tabs with 22px line icons over compressed caps labels. The active tab turns shuttle yellow with a 3px yellow top bar and a 20% fill in its icon; idle tabs are a soft grey on ink. The header is light floor with the court mark, the condensed wordmark and a caption-size status line.
+The tab bar is an ink band, 56px tall plus the home-indicator inset less 12px, four equal tabs with 22px line icons over compressed caps labels. The active tab turns shuttle yellow with a 3px yellow top bar and a 20% fill in its icon; idle tabs are a soft grey on ink. The header is light floor with the court mark, the condensed wordmark and a caption-size status line.
 
 ### Avatars
 Initials in compressed caps on a 2px-rimmed circle, in one of three court kits chosen from the player id: ink, court green, or white with an ink rim. Dimmed avatars (not played) are transparent with a bright-seam rim.

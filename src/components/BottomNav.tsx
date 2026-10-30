@@ -16,7 +16,9 @@ export function BottomNav() {
   return (
     <nav
       className="shrink-0 bg-ink"
-      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      // The full inset left a band under the labels; the home indicator only
+      // needs the lower part of it kept clear.
+      style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px) - 12px, 0px)" }}
     >
       <ul className="mx-auto flex max-w-[480px]">
         {TABS.map(({ href, label, icon: Icon }) => {
@@ -27,14 +29,14 @@ export function BottomNav() {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`flex h-16 flex-col items-center justify-center gap-1 border-t-[3px] transition-colors ${
+                className={`flex h-14 flex-col items-center justify-center gap-1.5 border-t-[3px] transition-colors ${
                   active
                     ? "border-shuttle text-shuttle"
                     : "border-transparent text-[#9aa59e] active:text-tape"
                 }`}
               >
                 <Icon active={active} />
-                <span className="display text-[0.8125rem] tracking-[0.06em]">
+                <span className="display text-[0.8125rem] leading-none tracking-[0.06em]">
                   {label}
                 </span>
               </Link>

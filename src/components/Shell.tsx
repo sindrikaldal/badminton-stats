@@ -11,13 +11,13 @@ export function Shell({
   status?: string;
 }) {
   // Pinned to the viewport, and only <main> scrolls. As a home-screen app iOS
-  // reports vh/dvh taller than the app really is (WebKit bug 316008), so a
-  // page-height shell left slack under the tab bar that let the whole app slide
-  // up under the status bar. With nothing in the page flow, the page cannot
-  // scroll. The dvh cap covers the opposite case, a stale and taller viewport
-  // on first launch, so the tab bar is never laid out below the fold.
+  // gets vh/dvh wrong by the status bar's height (WebKit bug 316008), so no
+  // viewport unit may size the shell: a dvh-tall shell let the page scroll
+  // under the status bar, and a dvh cap left a gap under the tab bar.
+  // `inset-0` takes the real screen, and with nothing in the page flow the
+  // page has nothing to scroll.
   return (
-    <div className="fixed inset-0 flex max-h-dvh flex-col">
+    <div className="fixed inset-0 flex flex-col">
       <header
         className="shrink-0 border-b border-line bg-canvas"
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
