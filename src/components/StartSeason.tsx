@@ -57,7 +57,7 @@ export function StartSeason({ compact = false }: { compact?: boolean }) {
       </div>
 
       {state && !state.ok ? (
-        <p className="text-sm text-flame">{state.error}</p>
+        <p className="text-sm text-danger">{state.error}</p>
       ) : null}
 
       <Submit />
@@ -71,7 +71,7 @@ function Submit() {
     <button
       type="submit"
       disabled={pending}
-      className="display h-13 w-full rounded-lg bg-win text-base tracking-[0.06em] text-canvas disabled:opacity-50"
+      className="display h-13 w-full rounded-lg bg-shuttle text-xl tracking-[0.04em] text-ink disabled:opacity-50"
       style={{ height: "3.25rem" }}
     >
       {pending ? "Stofna…" : "Stofna tímabil"}

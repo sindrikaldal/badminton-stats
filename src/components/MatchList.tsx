@@ -34,7 +34,7 @@ export function MatchList({
     ids.map((id) => byId.get(id)?.shortName ?? "?").join(" & ");
 
   return (
-    <ul className="space-y-2">
+    <ul className="card divide-y divide-line overflow-hidden">
       {matches.map((match) => {
         const winners = winnersOf(match);
         const losers = losersOf(match);
@@ -46,30 +46,27 @@ export function MatchList({
         const iWon = highlight !== undefined && winners.includes(highlight);
 
         return (
-          <li
-            key={match.id}
-            className={`card overflow-hidden ${isHonor ? "glow-flame border-flame/40" : ""}`}
-          >
-            <Link href={`/leikur/${match.id}`} className="block">
-              <div className="flex items-center justify-between border-b border-line px-3 py-2">
-                <span className="eyebrow">
+          <li key={match.id} className={isHonor ? "bg-[#fdf6d8]" : undefined}>
+            <Link href={`/leikur/${match.id}`} className="block px-3 pt-2 pb-2.5">
+              <div className="flex min-h-6 items-center justify-between gap-2">
+                <span className="text-xs font-medium text-ink-faint">
                   {showDate && dates?.get(match.sessionId)
                     ? dates.get(match.sessionId)
                     : `Leikur ${match.seq}`}
                 </span>
                 <span className="flex items-center gap-1.5">
                   {sevenNil ? (
-                    <span className="display tnum rounded bg-ink px-2 py-0.5 text-[11px] tracking-[0.1em] text-canvas">
+                    <span className="display tnum rounded bg-ink px-2 py-0.5 text-sm tracking-[0.04em] text-canvas">
                       7–0
                     </span>
                   ) : null}
                   {isHonor ? (
-                    <span className="display rounded border border-flame/50 bg-flame/10 px-2 py-0.5 text-[11px] tracking-[0.1em] text-flame">
+                    <span className="display rounded bg-shuttle px-2 py-0.5 text-sm tracking-[0.04em] text-ink">
                       Þrír í röð
                     </span>
                   ) : involvesMe ? (
                     <span
-                      className={`display text-[11px] tracking-[0.1em] ${iWon ? "text-win" : "text-ink-faint"}`}
+                      className={`display text-sm tracking-[0.04em] ${iWon ? "text-win" : "text-ink-faint"}`}
                     >
                       {iWon ? "Sigur" : "Tap"}
                     </span>
@@ -77,7 +74,7 @@ export function MatchList({
                 </span>
               </div>
 
-              <div className="divide-y divide-line/60">
+              <div>
                 <Row
                   names={nameOf(winners)}
                   score={winningScore(match)}
@@ -115,19 +112,18 @@ function Row({
   emphasised?: boolean;
 }) {
   return (
-    <div className="relative flex items-center justify-between gap-3 px-3 py-2.5">
-      {won ? (
-        <span className="absolute inset-y-0 left-0 w-[3px] bg-win" aria-hidden />
-      ) : null}
+    <div className="flex items-baseline justify-between gap-3">
       <span
-        className={`display truncate text-base ${
+        className={`display truncate text-lg leading-snug ${
           won ? "text-ink" : "text-ink-faint"
         } ${emphasised ? "underline decoration-challenge decoration-2 underline-offset-4" : ""}`}
       >
         {names}
       </span>
       <span
-        className={`display tnum text-xl ${won ? "text-win" : "text-ink-faint"}`}
+        className={`display tnum shrink-0 text-[1.75rem] leading-none ${
+          won ? "text-win" : "text-ink-faint"
+        }`}
       >
         {score}
       </span>

@@ -1,18 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Barlow_Condensed, Rubik } from "next/font/google";
+import { Archivo } from "next/font/google";
 import "./globals.css";
 
-const display = Barlow_Condensed({
+// One family for everything: extra-condensed caps for scores and labels, normal
+// width for reading. The width axis carries the difference.
+const archivo = Archivo({
   subsets: ["latin", "latin-ext"],
-  weight: ["600", "700", "800"],
-  variable: "--font-barlow",
-  display: "swap",
-});
-
-const body = Rubik({
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-rubik",
+  axes: ["wdth"],
+  variable: "--font-archivo",
   display: "swap",
 });
 
@@ -20,11 +15,11 @@ export const metadata: Metadata = {
   title: "Badd Boys",
   description: "Badmintonkvöldin, leikirnir og tölfræðin.",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Badd Boys" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Badd Boys" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0f1e",
+  themeColor: "#eef1ec",
   width: "device-width",
   initialScale: 1,
   // The score pads are large on purpose; a stray double-tap should not zoom.
@@ -36,7 +31,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="is" className={`${display.variable} ${body.variable}`}>
+    <html lang="is" className={archivo.variable}>
       <body className="antialiased">{children}</body>
     </html>
   );

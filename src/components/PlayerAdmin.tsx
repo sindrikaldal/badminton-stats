@@ -54,7 +54,7 @@ export function PlayerAdmin({
     });
 
   return (
-    <div className="card mt-6 border-flame/25 p-4">
+    <div className="card mt-6 border-danger/25 p-4">
       <p className="eyebrow">Umsjón</p>
 
       {!player.isActive ? (
@@ -68,7 +68,7 @@ export function PlayerAdmin({
             type="button"
             onClick={toggleArchive}
             disabled={pending}
-            className="display mt-3 w-full rounded-lg bg-win py-3 text-sm text-canvas disabled:opacity-50"
+            className="display mt-3 w-full rounded-lg bg-shuttle py-3 text-lg text-ink disabled:opacity-50"
           >
             {pending ? "Vista…" : "Taka úr geymslu"}
           </button>
@@ -97,7 +97,7 @@ export function PlayerAdmin({
               <div className="mt-3">
                 {/* A regular is a bigger deal to remove than a one-off guest. */}
                 {!player.isGuest ? (
-                  <p className="mb-2 rounded-lg border border-flame/40 bg-flame/10 px-3 py-2 text-sm text-flame">
+                  <p className="mb-2 rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
                     {player.name} er fastamaður í hópnum. Ertu viss?
                   </p>
                 ) : null}
@@ -106,7 +106,7 @@ export function PlayerAdmin({
                     type="button"
                     onClick={remove}
                     disabled={pending}
-                    className="display flex-1 rounded-lg bg-flame py-3 text-sm text-canvas disabled:opacity-50"
+                    className="display flex-1 rounded-lg bg-danger py-3 text-lg text-tape disabled:opacity-50"
                   >
                     {pending ? "Eyði…" : `Já, eyða ${player.shortName}`}
                   </button>
@@ -123,7 +123,7 @@ export function PlayerAdmin({
               <button
                 type="button"
                 onClick={() => setConfirming(true)}
-                className="display mt-2 w-full rounded-lg border border-flame/50 py-3 text-sm text-flame"
+                className="display mt-2 w-full rounded-lg border border-danger/50 py-3 text-lg text-danger"
               >
                 Eyða leikmanni
               </button>

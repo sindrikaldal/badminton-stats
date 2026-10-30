@@ -62,38 +62,37 @@ export function Celebration({
       role="dialog"
       aria-modal="true"
       aria-label="Þrír í röð"
-      className="fixed inset-0 z-50 overflow-y-auto bg-canvas/97 backdrop-blur-sm"
+      className="fixed inset-0 z-50 overflow-y-auto bg-shuttle"
     >
       <Confetti />
       <div className="relative mx-auto flex min-h-dvh max-w-[420px] flex-col justify-center px-6 py-10">
         <div className="animate-pop-in text-center">
-          <p className="eyebrow text-flame">
+          <div className="mx-auto flex size-28 items-center justify-center rounded-full bg-surface">
+            <ShuttleBurst />
+          </div>
+
+          <h1 className="display mt-6 text-[4.5rem] leading-[0.9] text-ink">
+            Þrír í röð!
+          </h1>
+          <p className="display mt-2 text-2xl tracking-[0.04em] text-ink">
+            Meistarar vallarins
+          </p>
+          <p className="mt-1 text-sm font-medium text-ink">
             {honor.nth > 1
               ? `${honor.nth * HONOR_STREAK_LENGTH} leikja yfirburðir`
               : "3 leikja yfirburðir"}
           </p>
-
-          <div className="mx-auto mt-5 flex size-28 items-center justify-center rounded-2xl border border-win/40 bg-surface glow-win">
-            <ShuttleBurst />
-          </div>
-
-          <h1 className="display text-glow-win mt-6 text-5xl text-win">
-            Þrír í röð!
-          </h1>
-          <p className="display mt-1 text-lg tracking-[0.16em] text-ink-muted">
-            Meistarar vallarins
-          </p>
         </div>
 
         <div className="card animate-rise mt-7 p-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 divide-x divide-line">
             {players.map((player) => (
               <div
                 key={player.id}
-                className="flex flex-col items-center gap-2 rounded-lg border border-line bg-surface-raised px-3 py-4"
+                className="flex flex-col items-center gap-2 px-3 py-2"
               >
                 <Avatar player={player} size="lg" />
-                <span className="display text-center text-base text-ink">
+                <span className="display text-center text-xl text-ink">
                   {player.shortName}
                 </span>
               </div>
@@ -106,7 +105,7 @@ export function Celebration({
               {run.map((match) => (
                 <span
                   key={match.id}
-                  className="display tnum rounded border border-win/40 bg-win/10 px-2 py-1 text-sm text-win"
+                  className="display tnum rounded bg-win px-2 py-1 text-lg text-tape"
                 >
                   {winningScore(match)}–{losingScore(match)}
                 </span>
@@ -119,8 +118,8 @@ export function Celebration({
           </p>
         </div>
 
-        <div className="card animate-rise mt-4 border-flame/30 p-4">
-          <p className="display text-base text-flame">
+        <div className="card animate-rise mt-3 p-4">
+          <p className="display text-xl text-ink">
             Regla Badd Boys: parið verður nú að splittast!
           </p>
           <p className="mt-2 text-sm text-ink-muted">
@@ -128,7 +127,7 @@ export function Celebration({
             í næsta leik. Til hamingju með sigurhrinuna — nú er kominn tími til
             að blanda í spilin.
           </p>
-          <p className="mt-3 rounded-lg border border-line bg-surface-raised px-3 py-2 text-xs text-ink-muted">
+          <p className="mt-3 border-t border-line pt-3 text-xs text-ink-muted">
             +1 „Þrír í röð“ heiðursmerki bætt á báða leikmenn.
           </p>
         </div>
@@ -136,7 +135,7 @@ export function Celebration({
         <button
           type="button"
           onClick={close}
-          className="display mt-5 w-full rounded-lg bg-win text-base tracking-[0.06em] text-canvas"
+          className="display mt-5 w-full rounded-lg bg-ink text-xl tracking-[0.04em] text-shuttle"
           style={{ height: "3.5rem" }}
         >
           Splitta pari & stofna næsta leik
@@ -150,7 +149,7 @@ function ShuttleBurst() {
   return (
     <svg width="72" height="72" viewBox="0 0 512 512" aria-hidden>
       <g transform="translate(256 280)">
-        <g fill="none" stroke="#38a8ff" strokeWidth="19" strokeLinecap="round">
+        <g fill="none" stroke="#16201a" strokeWidth="19" strokeLinecap="round">
           <path d="M0 -18 L-96 -186" />
           <path d="M0 -18 L-50 -204" />
           <path d="M0 -18 L0 -212" />
@@ -160,11 +159,11 @@ function ShuttleBurst() {
         <path
           d="M-70 -140 Q0 -112 70 -140"
           fill="none"
-          stroke="#14e27a"
+          stroke="#1f7a4d"
           strokeWidth="15"
           strokeLinecap="round"
         />
-        <circle cy="14" r="62" fill="#14e27a" />
+        <circle cy="14" r="62" fill="#1f7a4d" />
       </g>
     </svg>
   );
@@ -174,7 +173,7 @@ const CONFETTI = Array.from({ length: 26 }, (_, i) => ({
   left: (i * 37) % 100,
   delay: (i % 9) * 0.13,
   duration: 2.4 + ((i * 7) % 12) / 10,
-  color: i % 3 === 0 ? "#14e27a" : i % 3 === 1 ? "#38a8ff" : "#ff7a3d",
+  color: i % 3 === 0 ? "#1f7a4d" : i % 3 === 1 ? "#1d4f96" : "#ffffff",
   size: 5 + (i % 4) * 2,
 }));
 

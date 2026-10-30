@@ -74,7 +74,7 @@ export function AddPlayerInline({
           type="checkbox"
           checked={isGuest}
           onChange={(event) => setIsGuest(event.target.checked)}
-          className="size-4 accent-[#14e27a]"
+          className="size-4 accent-win"
         />
         Gestur
       </label>

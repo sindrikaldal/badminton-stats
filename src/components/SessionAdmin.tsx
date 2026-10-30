@@ -94,7 +94,7 @@ export function SessionAdmin({
                     {player.name}
                   </span>
                   <span
-                    className={`display text-[11px] ${on ? "text-win" : "text-ink-faint"}`}
+                    className={`display text-xs ${on ? "text-win" : "text-ink-faint"}`}
                   >
                     {on ? "Mættur" : "Ekki með"}
                   </span>
@@ -110,7 +110,7 @@ export function SessionAdmin({
         <input type="hidden" name="sessionId" value={sessionId} />
 
         {state && !state.ok ? (
-          <p className="mt-2 text-sm text-flame">{state.error}</p>
+          <p className="mt-2 text-sm text-danger">{state.error}</p>
         ) : null}
         {state?.ok ? <p className="mt-2 text-sm text-win">Vistað.</p> : null}
 
@@ -136,7 +136,7 @@ export function SessionAdmin({
                 type="button"
                 onClick={destroy}
                 disabled={deleting}
-                className="display flex-1 rounded-lg bg-flame py-2.5 text-sm text-canvas disabled:opacity-50"
+                className="display flex-1 rounded-lg bg-danger py-2.5 text-lg text-tape disabled:opacity-50"
               >
                 {deleting ? "Eyði…" : "Já, eyða kvöldinu"}
               </button>
@@ -152,7 +152,7 @@ export function SessionAdmin({
             <button
               type="button"
               onClick={() => setConfirming(true)}
-              className="display w-full rounded-lg border border-flame/40 py-2.5 text-sm text-flame"
+              className="display w-full rounded-lg border border-danger/40 py-2.5 text-lg text-danger"
             >
               Eyða þessu kvöldi
             </button>

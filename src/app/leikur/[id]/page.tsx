@@ -4,6 +4,7 @@ import { EditMatch } from "@/components/EditMatch";
 import { SectionTitle, Shell } from "@/components/Shell";
 import { formatIcelandicDate } from "@/lib/domain/stats";
 import * as repo from "@/lib/repo";
+import { Arrow } from "@/components/Arrow";
 
 export const dynamic = "force-dynamic";
 
@@ -33,8 +34,9 @@ export default async function MatchPage({
 
   return (
     <Shell status={formatIcelandicDate(session.playedOn)}>
-      <Link href={`/?kvold=${session.id}`} className="eyebrow">
-        ← Til baka
+      <Link href={`/?kvold=${session.id}`} className="eyebrow inline-flex min-h-11 items-center gap-1.5">
+        <Arrow direction="left" />
+            Til baka
       </Link>
       <SectionTitle>Leikur {match.seq}</SectionTitle>
       <EditMatch match={match} candidates={candidates} sessionId={session.id} />

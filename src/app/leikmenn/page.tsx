@@ -49,7 +49,7 @@ export default async function PlayersPage() {
             Bættu við hópnum hér að neðan.
           </EmptyState>
         ) : (
-          <ul className="space-y-2">
+          <ul className="card divide-y divide-line overflow-hidden">
             {regulars.map(({ row, player }) => (
               <PlayerRow
                 key={row.playerId}
@@ -63,7 +63,7 @@ export default async function PlayersPage() {
         {guests.length > 0 ? (
           <>
             <SectionTitle>Gestir</SectionTitle>
-            <ul className="space-y-2">
+            <ul className="card divide-y divide-line overflow-hidden">
               {guests.map(({ row, player }) => (
                 <PlayerRow
                   key={row.playerId}
@@ -81,7 +81,7 @@ export default async function PlayersPage() {
             <p className="mb-2 text-xs text-ink-faint">
               Birtast ekki þegar þú velur leikmenn. Úrslitin þeirra standa.
             </p>
-            <ul className="space-y-2 opacity-60">
+            <ul className="card divide-y divide-line overflow-hidden opacity-60">
               {archived.map(({ row, player }) => (
                 <PlayerRow
                   key={row.playerId}
@@ -113,11 +113,11 @@ function PlayerRow({
 }) {
   return (
     <li>
-      <Link href={`/leikmenn/${player.id}`} className="card flex items-center gap-3 p-3">
+      <Link href={`/leikmenn/${player.id}`} className="flex items-center gap-3 px-3 py-2.5">
         <Avatar player={player} />
         <div className="min-w-0 flex-1">
-          <p className="display truncate text-base text-ink">{player.name}</p>
-          <p className="text-[11px] text-ink-faint">
+          <p className="display truncate text-lg text-ink">{player.name}</p>
+          <p className="text-xs text-ink-faint">
             {stats && stats.played > 0
               ? `${stats.wins}S – ${stats.losses}T${stats.honors > 0 ? ` · ${stats.honors}× 3 í röð` : ""}`
               : "Engir leikir á tímabilinu"}

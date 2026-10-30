@@ -64,8 +64,8 @@ export function WhoAmI({ players }: { players: Player[] }) {
 
   return (
     <div className="animate-rise card mb-4 p-4">
-      <p className="eyebrow">Hver ert þú?</p>
-      <p className="mt-1 text-sm text-ink-muted">
+      <h2 className="display text-xl leading-none text-ink">Hver ert þú?</h2>
+      <p className="mt-1.5 text-sm text-ink-muted">
         Við notum þetta bara til að sýna þínar tölur fyrst.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
@@ -85,7 +85,7 @@ export function WhoAmI({ players }: { players: Player[] }) {
       <button
         type="button"
         onClick={() => setDismissed(true)}
-        className="mt-3 text-xs text-ink-faint underline"
+        className="mt-3 py-1 text-sm text-ink-muted underline underline-offset-4"
       >
         Sleppa í bili
       </button>

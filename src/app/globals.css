@@ -1,50 +1,70 @@
 @import "tailwindcss";
 
 /*
- * Badd Boys -- a toned-down take on the Stitch "Pro Arena Dynamic" design.
- * Dark arena base, green for whoever holds the court, cyan for the challengers,
- * flame for streaks. Neon glows kept; gradients, shears and chamfers dropped.
+ * Badd Boys -- the hall is the interface. A light hall-floor ground read under
+ * bright sports-hall lighting, court-mat green for the court and every win,
+ * white line tape as the only rules on green, shuttle-tube yellow for the one
+ * thing to press and for runs. Flat fields, no glows.
  */
 @theme {
-  --color-canvas: #0a0f1e;
-  --color-surface: #0e1526;
-  --color-surface-raised: #16203a;
-  --color-surface-input: #070c18;
-  --color-line: #1e2a47;
-  --color-line-bright: #2c3c63;
+  --color-canvas: #eef1ec;
+  --color-surface: #ffffff;
+  --color-surface-raised: #e3e8e2;
+  --color-surface-input: #ffffff;
+  --color-line: #d5dcd4;
+  --color-line-bright: #b9c3b8;
 
-  --color-ink: #f2f5fa;
-  --color-ink-muted: #97a4bd;
-  --color-ink-faint: #5c6b87;
+  --color-ink: #16201a;
+  --color-ink-muted: #46524a;
+  --color-ink-faint: #5e6a62;
 
-  /* Holds the court. */
-  --color-win: #14e27a;
-  --color-win-dim: #0b8b4b;
+  /* Holds the court, and every win. Deep enough to read as text on the floor. */
+  --color-win: #1a6b43;
+  --color-win-dim: #d9ebe0;
+  /* The court mat itself, and the net's shadow. */
+  --color-court: #1f7a4d;
+  --color-court-deep: #14573a;
+  --color-tape: #ffffff;
   /* Challenging. */
-  --color-challenge: #38a8ff;
-  --color-challenge-dim: #1b5f96;
-  /* On a run. */
-  --color-flame: #ff7a3d;
+  --color-challenge: #1d4f96;
+  --color-challenge-dim: #dde6f3;
+  /* On a run: the shuttle-tube yellow is a fill; flame is its readable ink. */
+  --color-shuttle: #f4d23c;
+  --color-flame: #8a5a00;
+  /* Only for deleting things and for errors. */
+  --color-danger: #b42318;
 
-  --font-display: var(--font-barlow), "Arial Narrow", sans-serif;
-  --font-body: var(--font-rubik), system-ui, sans-serif;
+  --font-display: var(--font-archivo), "Arial Narrow", sans-serif;
+  --font-body: var(--font-archivo), system-ui, sans-serif;
 
-  --radius-card: 10px;
+  --radius-card: 4px;
+  --radius-lg: 4px;
+  --radius-2xl: 6px;
 }
 
 @layer base {
   html {
     background: var(--color-canvas);
-    /* Keeps the arena dark behind the safe areas on iOS. */
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
     background: var(--color-canvas);
     color: var(--color-ink);
     font-family: var(--font-body);
+    caret-color: var(--color-win);
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: contain;
+  }
+
+  ::selection {
+    background: var(--color-shuttle);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-challenge);
+    outline-offset: 2px;
   }
 
   /* Scores must not jog sideways as digits change. */
@@ -53,62 +73,53 @@
   }
 }
 
+/* A flat field on the floor: white, no border, no shadow. */
 @utility card {
   background: var(--color-surface);
-  border: 1px solid var(--color-line);
+  border: 1px solid transparent;
   border-radius: var(--radius-card);
 }
 
-/* The kept neon: a localized aura on whatever is live or on a run. */
-@utility glow-win {
-  box-shadow:
-    0 0 24px -4px rgb(20 226 122 / 0.35),
-    inset 0 0 0 1px rgb(20 226 122 / 0.5);
+/* Marks whatever is live, leading or on a run: a solid inset edge, not a halo. */
+@utility mark-win {
+  box-shadow: inset 0 0 0 2px var(--color-win);
 }
 
-@utility glow-challenge {
-  box-shadow:
-    0 0 24px -4px rgb(56 168 255 / 0.3),
-    inset 0 0 0 1px rgb(56 168 255 / 0.45);
+@utility mark-challenge {
+  box-shadow: inset 0 0 0 2px var(--color-challenge);
 }
 
-@utility glow-flame {
-  box-shadow:
-    0 0 22px -4px rgb(255 122 61 / 0.35),
-    inset 0 0 0 1px rgb(255 122 61 / 0.45);
+@utility mark-flame {
+  box-shadow: inset 0 0 0 2px var(--color-shuttle);
 }
 
-@utility text-glow-win {
-  text-shadow: 0 0 18px rgb(20 226 122 / 0.55);
-}
-
-@utility text-glow-flame {
-  text-shadow: 0 0 18px rgb(255 122 61 / 0.5);
-}
-
-/* Section eyebrow: uppercase condensed, wide tracking. */
+/* A label for a region or a control group, never a kicker over a heading. */
 @utility eyebrow {
   font-family: var(--font-display);
+  font-stretch: 75%;
   font-weight: 700;
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-ink-faint);
 }
 
 @utility display {
   font-family: var(--font-display);
+  font-stretch: 62%;
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
 }
 
-/* The faint stringbed mesh on the canvas -- subtle enough to read as texture. */
-@utility stringbed {
+/* The net: white tape on top, a fine mesh hanging below it. */
+@utility net {
+  background-color: var(--color-court-deep);
   background-image:
-    linear-gradient(to right, rgb(30 42 71 / 0.35) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(30 42 71 / 0.35) 1px, transparent 1px);
-  background-size: 28px 28px;
+    linear-gradient(to right, rgb(255 255 255 / 0.22) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.22) 1px, transparent 1px);
+  background-size: 7px 7px;
+  border-top: 4px solid var(--color-tape);
 }
 
 @keyframes pop-in {
@@ -134,11 +145,11 @@
 }
 
 @utility animate-pop-in {
-  animation: pop-in 0.34s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  animation: pop-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @utility animate-rise {
-  animation: rise 0.3s ease-out both;
+  animation: rise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

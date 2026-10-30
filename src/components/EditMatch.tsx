@@ -3,7 +3,7 @@
 import { useActionState, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { editMatch, removeMatch } from "@/app/actions";
-import { Avatar } from "./Avatar";
+import { Court } from "./Court";
 import { type Match, type Player, type PlayerId, scoreProblem } from "@/lib/domain/types";
 
 type Slots = [PlayerId | null, PlayerId | null, PlayerId | null, PlayerId | null];
@@ -58,95 +58,61 @@ export function EditMatch({
 
   return (
     <>
-      <form action={action} className="card p-4">
-        <div className="grid grid-cols-2 gap-3">
-          {(
-            [
-              { label: "Lið A", tone: "win", indices: [0, 1], score: scoreA, set: setScoreA },
-              { label: "Lið B", tone: "challenge", indices: [2, 3], score: scoreB, set: setScoreB },
-            ] as const
-          ).map((side) => (
-            <div key={side.label}>
-              <p className="eyebrow text-center">{side.label}</p>
-              <div className="mt-2 space-y-1.5">
-                {side.indices.map((index) => {
-                  const player = slots[index] ? byId.get(slots[index]!) : null;
-                  return (
-                    <div
-                      key={index}
-                      className={`flex h-11 items-center justify-center rounded-lg border px-2 ${
-                        player
-                          ? side.tone === "win"
-                            ? "border-win/40 bg-surface-raised"
-                            : "border-challenge/40 bg-surface-raised"
-                          : "border-dashed border-line"
-                      }`}
-                    >
-                      <span
-                        className={`display truncate text-sm ${
-                          player
-                            ? side.tone === "win"
-                              ? "text-win"
-                              : "text-challenge"
-                            : "text-ink-faint"
-                        }`}
-                      >
-                        {player?.shortName ?? "Tómt"}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <input
-                type="number"
-                inputMode="numeric"
-                min={0}
-                max={99}
-                value={side.score}
-                onChange={(event) => side.set(Number(event.target.value))}
-                aria-label={`${side.label} stig`}
-                className={`display tnum mt-2 w-full rounded-lg border bg-surface-input py-2 text-center text-4xl outline-none ${
-                  side.tone === "win"
-                    ? "border-win/40 text-win focus:border-win"
-                    : "border-challenge/40 text-challenge focus:border-challenge"
-                }`}
-              />
-            </div>
-          ))}
-        </div>
-
-        <p className="eyebrow mt-4">Leikmenn</p>
-        <div className="mt-2 flex flex-wrap gap-2">
+      <form action={action}>
+        <p className="text-right text-xs font-medium text-ink-faint">
+          {complete ? "Skiptu um leikmenn með því að ýta" : "Veldu fjóra"}
+        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
           {candidates.map((player) => {
             const at = slots.indexOf(player.id);
             const placed = at !== -1;
-            const side = at === 0 || at === 1 ? "win" : "challenge";
+            const side = at === 0 || at === 1 ? "a" : "b";
             return (
               <button
                 key={player.id}
                 type="button"
                 onClick={() => place(player.id)}
-                className={`display flex items-center gap-2 rounded-full border px-3 py-2 text-sm ${
+                aria-pressed={placed}
+                className={`display flex h-9 items-center rounded-full border-2 px-3 text-base transition-colors ${
                   placed
-                    ? side === "win"
-                      ? "border-win/60 bg-win/10 text-win"
-                      : "border-challenge/60 bg-challenge/10 text-challenge"
-                    : "border-line bg-surface-raised text-ink-muted"
+                    ? side === "a"
+                      ? "border-win bg-win text-tape"
+                      : "border-challenge bg-challenge text-tape"
+                    : "border-line bg-surface text-ink"
                 }`}
               >
-                <Avatar player={player} size="sm" dimmed={!placed} />
                 {player.shortName}
               </button>
             );
           })}
         </div>
 
+        <Court
+          slots={slots}
+          byId={byId}
+          onClear={(index) =>
+            setSlots((prev) => {
+              const next = [...prev] as Slots;
+              next[index] = null;
+              return next;
+            })
+          }
+          scoreA={scoreA}
+          scoreB={scoreB}
+          onScoreA={setScoreA}
+          onScoreB={setScoreB}
+          onSwap={() => {
+            setSlots(([a1, a2, b1, b2]) => [b1, b2, a1, a2]);
+            setScoreA(scoreB);
+            setScoreB(scoreA);
+          }}
+        />
+
         {problem && complete ? (
-          <p className="mt-4 text-sm text-ink-faint">{problem}</p>
+          <p className="mt-4 text-sm text-ink-muted">{problem}</p>
         ) : null}
         {state && !state.ok ? (
-          <p className="mt-4 text-sm text-flame">{state.error}</p>
+          <p className="mt-4 text-sm font-medium text-danger">{state.error}</p>
         ) : null}
         {state?.ok ? (
           <p className="mt-4 text-sm text-win">Vistað.</p>
@@ -163,15 +129,15 @@ export function EditMatch({
         <button
           type="submit"
           disabled={!complete || !!problem || pending}
-          className="display mt-4 w-full rounded-lg bg-win text-base tracking-[0.06em] text-canvas disabled:bg-surface-raised disabled:text-ink-faint"
-          style={{ height: "3.25rem" }}
+          className="display mt-4 w-full rounded-lg bg-shuttle text-[1.5rem] text-ink disabled:bg-surface-raised disabled:text-ink-faint"
+          style={{ height: "3.75rem" }}
         >
           {pending ? "Vista…" : "Vista breytingar"}
         </button>
       </form>
 
-      <div className="card mt-4 border-flame/30 p-4">
-        <p className="display text-base text-ink">Eyða leiknum</p>
+      <div className="card mt-6 p-4">
+        <p className="display text-xl text-ink">Eyða leiknum</p>
         <p className="mt-1 text-sm text-ink-muted">
           Sigurhrinur og heiðursmerki kvöldsins reiknast upp á nýtt.
         </p>
@@ -181,7 +147,7 @@ export function EditMatch({
               type="button"
               onClick={destroy}
               disabled={deleting}
-              className="display flex-1 rounded-lg bg-flame py-3 text-sm text-canvas disabled:opacity-50"
+              className="display flex-1 rounded-lg bg-danger py-3 text-lg text-tape disabled:opacity-50"
             >
               {deleting ? "Eyði…" : "Já, eyða"}
             </button>
@@ -197,7 +163,7 @@ export function EditMatch({
           <button
             type="button"
             onClick={() => setConfirmingDelete(true)}
-            className="display mt-3 w-full rounded-lg border border-flame/50 py-3 text-sm text-flame"
+            className="display mt-3 w-full rounded-lg border border-danger/50 py-3 text-lg text-danger"
           >
             Eyða
           </button>

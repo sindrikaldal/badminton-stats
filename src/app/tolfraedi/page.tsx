@@ -121,7 +121,7 @@ export default async function StatsPage({
             href={hrefFor({ ...view, flipi: option.key })}
             className={`display flex-1 rounded-lg py-2.5 text-center text-sm tracking-[0.04em] ${
               option.key === tab
-                ? "bg-challenge text-canvas"
+                ? "bg-ink text-tape"
                 : "border border-line bg-surface-raised text-ink-muted"
             }`}
           >
@@ -157,7 +157,7 @@ function SeasonChip({
   return (
     <Link
       href={href}
-      className={`display rounded-full border px-2.5 py-1 text-[11px] tracking-[0.06em] ${
+      className={`display rounded-full border px-2.5 py-1 text-xs tracking-[0.06em] ${
         active
           ? "border-win/60 bg-win/10 text-win"
           : "border-line bg-surface-raised text-ink-faint"
@@ -183,7 +183,8 @@ function Leaderboard({
   const rows = rankedLeaderboard(stats.players, sort.sort).filter(
     (p) => p.played > 0,
   );
-  const medals = ["#f0b429", "#c0c8d4", "#c98b52"];
+  // Gold is the shuttle tube's yellow; silver and bronze sit beside it.
+  const medals = ["bg-shuttle text-ink", "bg-[#c9d1cb] text-ink", "bg-[#b8743f] text-tape"];
 
   return (
     <>
@@ -199,7 +200,7 @@ function Leaderboard({
               key={option.key}
               href={hrefFor({ ...view, rada: option.key })}
               aria-current={option.key === sort.key ? "true" : undefined}
-              className={`display rounded-full border px-2.5 py-1 text-[11px] tracking-[0.06em] ${
+              className={`display rounded-full border px-2.5 py-1 text-xs tracking-[0.06em] ${
                 option.key === sort.key
                   ? "border-challenge/60 bg-challenge/10 text-challenge"
                   : "border-line bg-surface-raised text-ink-faint"
@@ -211,7 +212,7 @@ function Leaderboard({
         </div>
       </div>
 
-      <ul className="mt-3 space-y-2">
+      <ul className="mt-3 card divide-y divide-line overflow-hidden">
         {rows.map((row, index) => {
           const player = byId.get(row.playerId);
           if (!player) return null;
@@ -222,26 +223,22 @@ function Leaderboard({
             <li key={row.playerId}>
               <Link
                 href={`/leikmenn/${row.playerId}`}
-                className={`card relative flex items-center gap-3 p-3 ${
-                  rank === 1 ? "glow-win" : ""
+                className={`flex items-center gap-3 px-3 py-2.5 ${
+                  rank === 1 ? "bg-win-dim" : ""
                 }`}
               >
-                {rank && rank <= 3 ? (
-                  <span
-                    className="absolute inset-y-0 left-0 w-[3px] rounded-l"
-                    style={{ background: medals[rank - 1] }}
-                    aria-hidden
-                  />
-                ) : null}
-
-                <span className="display w-5 shrink-0 text-center text-sm text-ink-faint">
+                <span
+                  className={`display tnum flex size-8 shrink-0 items-center justify-center rounded text-lg ${
+                    rank && rank <= 3 ? medals[rank - 1] : "text-ink-faint"
+                  }`}
+                >
                   {rank ?? "–"}
                 </span>
                 <Avatar player={player} />
 
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-2">
-                    <span className="display truncate text-base text-ink">
+                    <span className="display truncate text-lg text-ink">
                       {player.shortName}
                     </span>
                     {row.honors > 0 ? (
@@ -250,7 +247,7 @@ function Leaderboard({
                       </span>
                     ) : null}
                   </p>
-                  <p className="truncate text-[11px] text-ink-faint">
+                  <p className="text-xs text-ink-faint">
                     {row.wins}S–{row.losses}T · hrina {row.bestStreak} ·{" "}
                     {formatPercent(row.attendanceRate)} mæting
                     {/* Guests keep their wins but stay off the season board. */}
@@ -268,7 +265,7 @@ function Leaderboard({
                       <p className="display tnum text-2xl text-win">
                         {row.wins}
                       </p>
-                      <p className="text-[10px] text-ink-faint">
+                      <p className="text-xs text-ink-faint">
                         {formatPercent(row.winRate)} · {row.played} leikir
                       </p>
                     </>
@@ -283,7 +280,7 @@ function Leaderboard({
                       >
                         {formatPercent(row.winRate)}
                       </p>
-                      <p className="text-[10px] text-ink-faint">
+                      <p className="text-xs text-ink-faint">
                         {row.played} leikir
                       </p>
                     </>
@@ -316,21 +313,21 @@ function Pairs({
   }
 
   return (
-    <ul className="mt-4 space-y-2">
+    <ul className="mt-4 card divide-y divide-line overflow-hidden">
       {stats.pairs.map((pair) => {
         const [one, two] = pair.players.map((id) => byId.get(id));
         if (!one || !two) return null;
         return (
-          <li key={pair.pair} className="card flex items-center gap-3 p-3">
+          <li key={pair.pair} className="flex items-center gap-3 px-3 py-2.5">
             <span className="flex -space-x-2">
               <Avatar player={one} size="sm" />
               <Avatar player={two} size="sm" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="display truncate text-base text-ink">
+              <p className="display truncate text-lg text-ink">
                 {one.shortName} & {two.shortName}
               </p>
-              <p className="text-[11px] text-ink-faint">
+              <p className="text-xs text-ink-faint">
                 {pair.wins}S – {pair.played - pair.wins}T í {pair.played} leikjum
                 {pair.honors > 0 ? ` · ${pair.honors}× 3 í röð` : ""}
               </p>
@@ -362,33 +359,35 @@ function Records({
   byId: Map<number, Player>;
 }) {
   return (
-    <ul className="mt-4 space-y-2">
+    <ul className="mt-4 card divide-y divide-line overflow-hidden">
       {stats.records.map((record) => (
-        <li key={record.kind} className="card p-4">
-          <p className="eyebrow">{record.label}</p>
-          <div className="mt-1 flex items-baseline justify-between gap-3">
+        <li key={record.kind} className="flex items-start justify-between gap-4 px-4 py-3">
+          <div className="min-w-0">
+            <p className="display text-lg leading-tight text-ink">{record.label}</p>
+            {record.players.length > 0 ? (
+              <p className="mt-0.5 text-sm text-ink-muted">
+                <span className="font-semibold text-ink">
+                  {joinNames(record.players.map((id) => byId.get(id)?.shortName))}
+                </span>
+                {record.beaten?.length ? (
+                  <>
+                    {" gegn "}
+                    {joinNames(record.beaten.map((id) => byId.get(id)?.shortName))}
+                  </>
+                ) : null}
+              </p>
+            ) : null}
+          </div>
+          <div className="shrink-0 text-right">
             <p
-              className={`display tnum text-3xl ${
-                record.kind === "most-seven-nil" ? "text-flame" : "text-win"
+              className={`display tnum text-[1.75rem] leading-none ${
+                record.kind === "most-seven-nil" ? "text-ink" : "text-win"
               }`}
             >
               {record.value}
             </p>
-            <p className="text-right text-xs text-ink-faint">{record.detail}</p>
+            <p className="mt-1 text-xs text-ink-faint">{record.detail}</p>
           </div>
-          {record.players.length > 0 ? (
-            <p className="mt-2 text-sm text-ink-muted">
-              <span className="display text-ink">
-                {joinNames(record.players.map((id) => byId.get(id)?.shortName))}
-              </span>
-              {record.beaten?.length ? (
-                <>
-                  {" gegn "}
-                  {joinNames(record.beaten.map((id) => byId.get(id)?.shortName))}
-                </>
-              ) : null}
-            </p>
-          ) : null}
         </li>
       ))}
     </ul>

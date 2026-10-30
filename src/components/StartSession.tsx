@@ -53,15 +53,15 @@ export function StartSession({
         />
       </div>
 
-      <div className="card p-5">
+      <div>
         <div className="flex items-baseline justify-between">
-          <p className="eyebrow">Hverjir mættu?</p>
-          <span className="display text-sm text-win">
+          <h3 className="display text-xl leading-none text-ink">Hverjir mættu?</h3>
+          <span className="display text-lg text-win">
             {selected.size} mættir
           </span>
         </div>
 
-        <ul className="mt-3 space-y-2">
+        <ul className="card mt-3 divide-y divide-line overflow-hidden">
           {players.map((player) => {
             const on = selected.has(player.id);
             return (
@@ -70,25 +70,23 @@ export function StartSession({
                   type="button"
                   onClick={() => toggle(player.id)}
                   aria-pressed={on}
-                  className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
-                    on
-                      ? "border-win/50 bg-win/10"
-                      : "border-line bg-surface-raised"
+                  className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors ${
+                    on ? "bg-win-dim" : "bg-surface"
                   }`}
                 >
                   <Avatar player={player} dimmed={!on} />
                   <span className="min-w-0 flex-1">
                     <span
-                      className={`display block truncate text-base ${on ? "text-ink" : "text-ink-faint"}`}
+                      className={`display block truncate text-lg ${on ? "text-ink" : "text-ink-faint"}`}
                     >
                       {player.name}
                     </span>
                     {player.isGuest ? (
-                      <span className="text-[11px] text-ink-faint">Gestur</span>
+                      <span className="text-xs text-ink-faint">Gestur</span>
                     ) : null}
                   </span>
                   <span
-                    className={`display text-xs ${on ? "text-win" : "text-ink-faint"}`}
+                    className={`display text-sm ${on ? "text-win" : "text-ink-faint"}`}
                   >
                     {on ? "Mættur" : "Ekki með"}
                   </span>
@@ -105,7 +103,7 @@ export function StartSession({
       </div>
 
       {state && !state.ok ? (
-        <p className="text-sm text-flame">{state.error}</p>
+        <p className="text-sm text-danger">{state.error}</p>
       ) : null}
 
       <Submit disabled={selected.size < 4} />
@@ -119,8 +117,8 @@ function Submit({ disabled }: { disabled: boolean }) {
     <button
       type="submit"
       disabled={pending || disabled}
-      className="display w-full rounded-lg bg-win text-base tracking-[0.06em] text-canvas disabled:bg-surface-raised disabled:text-ink-faint"
-      style={{ height: "3.25rem" }}
+      className="display w-full rounded-lg bg-shuttle text-[1.5rem] text-ink disabled:bg-surface-raised disabled:text-ink-faint"
+      style={{ height: "3.75rem" }}
     >
       {pending ? "Byrja…" : disabled ? "Veldu a.m.k. fjóra" : "Byrja kvöldið"}
     </button>

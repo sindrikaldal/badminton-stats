@@ -55,8 +55,8 @@ export function NightSummary({
   return (
     <>
       {best ? (
-        <div className="card glow-win mt-3 p-4">
-          <p className="eyebrow">Maður kvöldsins</p>
+        <div className="card mark-win mt-3 p-4">
+          <p className="display text-lg leading-none text-ink">Maður kvöldsins</p>
           <div className="mt-2 flex items-center gap-3">
             <span className="flex -space-x-3">
               {stats.playerOfTheNight.map((id) => {
@@ -85,7 +85,7 @@ export function NightSummary({
         </div>
       ) : null}
 
-      <ul className="mt-2 space-y-2">
+      <ul className="mt-2 card divide-y divide-line overflow-hidden">
         {stats.biggestWin ? (
           <Award
             label="Stærsti skellurinn"
@@ -126,7 +126,7 @@ export function NightSummary({
 
       <Swings stats={stats} names={names} lineOf={lineOf} />
 
-      <ul className="card mt-2 divide-y divide-line/60">
+      <ul className="card mt-2 divide-y divide-line">
         {stats.lines.map((line) => {
           const player = byId.get(line.playerId);
           if (!player) return null;
@@ -146,7 +146,7 @@ export function NightSummary({
                 >
                   {player.shortName}
                 </p>
-                <p className="truncate text-[11px] text-ink-faint">
+                <p className="truncate text-xs text-ink-faint">
                   {idle
                     ? "Mætti en spilaði ekki"
                     : `lengsta hrina ${line.bestStreak} · ${signed(line.avgMargin)}`}
@@ -189,10 +189,10 @@ function Swings({
     const half = ids[0] ? lineOf(ids[0])?.half : null;
     if (!half) return null;
     return (
-      <div className="flex items-baseline justify-between gap-3 py-1">
+      <div className="flex items-center justify-between gap-3 py-3">
         <div className="min-w-0">
-          <p className="eyebrow">{label}</p>
-          <p className="display truncate text-base text-ink">{names(ids)}</p>
+          <p className="display text-lg leading-tight text-ink">{label}</p>
+          <p className="truncate text-sm font-semibold text-ink">{names(ids)}</p>
         </div>
         <p className={`display tnum shrink-0 text-lg ${tone}`}>
           {half.first.wins}–{half.first.losses} → {half.second.wins}–
@@ -203,9 +203,9 @@ function Swings({
   };
 
   return (
-    <div className="card mt-2 divide-y divide-line/60 px-4 py-2">
+    <div className="card mt-2 divide-y divide-line px-4">
       {row(stats.warmedUp, "Hitnaði", "text-win")}
-      {row(stats.faded, "Kólnaði", "text-flame")}
+      {row(stats.faded, "Kólnaði", "text-ink")}
     </div>
   );
 }
@@ -224,16 +224,18 @@ function Award({
   beaten?: string;
 }) {
   return (
-    <li className="card p-4">
-      <p className="eyebrow">{label}</p>
-      <div className="mt-1 flex items-baseline justify-between gap-3">
-        <p className="display tnum text-3xl text-win">{value}</p>
-        <p className="text-right text-xs text-ink-faint">{detail}</p>
+    <li className="flex items-start justify-between gap-4 px-4 py-3">
+      <div className="min-w-0">
+        <p className="display text-lg leading-tight text-ink">{label}</p>
+        <p className="mt-0.5 text-sm text-ink-muted">
+          <span className="font-semibold text-ink">{who}</span>
+          {beaten ? <> gegn {beaten}</> : null}
+        </p>
       </div>
-      <p className="mt-2 text-sm text-ink-muted">
-        <span className="display text-ink">{who}</span>
-        {beaten ? <> gegn {beaten}</> : null}
-      </p>
+      <div className="shrink-0 text-right">
+        <p className="display tnum text-[1.75rem] leading-none text-win">{value}</p>
+        <p className="mt-1 text-xs text-ink-faint">{detail}</p>
+      </div>
     </li>
   );
 }
