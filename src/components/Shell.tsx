@@ -10,14 +10,16 @@ export function Shell({
   /** Small line under the wordmark: the live season or evening. */
   status?: string;
 }) {
-  // A flex column rather than a fixed nav: on first launch as a home-screen
-  // app, iOS positions fixed elements against a stale viewport and the nav
-  // lands below the fold until something scrolls. In flow, with the main area
-  // taking the slack, it is laid out with the content and stuck to the bottom.
+  // Pinned to the viewport, and only <main> scrolls. As a home-screen app iOS
+  // reports vh/dvh taller than the app really is (WebKit bug 316008), so a
+  // page-height shell left slack under the tab bar that let the whole app slide
+  // up under the status bar. With nothing in the page flow, the page cannot
+  // scroll. The dvh cap covers the opposite case, a stale and taller viewport
+  // on first launch, so the tab bar is never laid out below the fold.
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="fixed inset-0 flex max-h-dvh flex-col">
       <header
-        className="sticky top-0 z-30 border-b border-line bg-canvas"
+        className="shrink-0 border-b border-line bg-canvas"
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
         <div className="mx-auto flex max-w-[480px] items-center gap-3 px-4 py-2.5">
@@ -37,8 +39,10 @@ export function Shell({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[480px] flex-1 px-4 pt-4 pb-8">
-        {children}
+      <main className="flex-1 overflow-y-auto overscroll-y-contain">
+        <div className="mx-auto w-full max-w-[480px] px-4 pt-4 pb-8">
+          {children}
+        </div>
       </main>
 
       <BottomNav />

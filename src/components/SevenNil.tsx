@@ -64,7 +64,7 @@ export function SevenNil({
       aria-label="7–0"
       className="fixed inset-0 z-50 overflow-y-auto bg-ink text-tape"
     >
-      <div className="relative mx-auto flex min-h-dvh max-w-[420px] flex-col justify-center px-6 py-10">
+      <div className="relative mx-auto flex min-h-full max-w-[420px] flex-col justify-center px-6 py-10">
         <div className="animate-pop-in text-center">
           <p className="display tnum text-[8rem] leading-[0.85] text-tape">
             7–0

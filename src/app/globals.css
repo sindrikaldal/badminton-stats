@@ -46,6 +46,8 @@
   html {
     background: var(--color-canvas);
     color-scheme: light;
+    /* Only the root element's value reaches the page, so the app never bounces. */
+    overscroll-behavior: none;
   }
 
   body {
@@ -54,7 +56,6 @@
     font-family: var(--font-body);
     caret-color: var(--color-win);
     -webkit-tap-highlight-color: transparent;
-    overscroll-behavior-y: contain;
   }
 
   ::selection {

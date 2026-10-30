@@ -65,7 +65,7 @@ export function Celebration({
       className="fixed inset-0 z-50 overflow-y-auto bg-shuttle"
     >
       <Confetti />
-      <div className="relative mx-auto flex min-h-dvh max-w-[420px] flex-col justify-center px-6 py-10">
+      <div className="relative mx-auto flex min-h-full max-w-[420px] flex-col justify-center px-6 py-10">
         <div className="animate-pop-in text-center">
           <div className="mx-auto flex size-28 items-center justify-center rounded-full bg-surface">
             <ShuttleBurst />

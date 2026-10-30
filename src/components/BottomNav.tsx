@@ -15,7 +15,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="sticky bottom-0 z-40 bg-ink"
+      className="shrink-0 bg-ink"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <ul className="mx-auto flex max-w-[480px]">
