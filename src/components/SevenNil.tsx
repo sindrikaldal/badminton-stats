@@ -62,80 +62,58 @@ export function SevenNil({
       role="dialog"
       aria-modal="true"
       aria-label="7–0"
-      className="fixed inset-0 z-50 overflow-y-auto bg-canvas/97 backdrop-blur-sm"
+      className="fixed inset-0 z-50 overflow-y-auto bg-ink text-tape"
     >
-      <Vignette />
       <div className="relative mx-auto flex min-h-dvh max-w-[420px] flex-col justify-center px-6 py-10">
         <div className="animate-pop-in text-center">
-          <p className="eyebrow text-flame">Leikurinn stöðvaður</p>
-
-          <p className="display text-glow-flame tnum mt-4 text-[6.5rem] leading-none text-flame">
+          <p className="display tnum text-[8rem] leading-[0.85] text-tape">
             7–0
           </p>
-          <h1 className="display mt-3 text-2xl tracking-[0.12em] text-ink">
+          <h1 className="display mt-4 text-[2.5rem] leading-none text-shuttle">
             Stöðvaðir á núlli
           </h1>
+          <p className="mt-2 text-sm font-medium text-[#c9d1cb]">
+            Leikurinn stöðvaður
+          </p>
         </div>
 
-        <div className="card animate-rise mt-7 border-flame/40 p-4">
-          <p className="eyebrow text-center">Á núlli</p>
-          <div className="mt-3 grid grid-cols-2 gap-3">
+        <div className="animate-rise mt-7 rounded-lg bg-[#232e27] p-4">
+          <p className="eyebrow text-center text-[#c9d1cb]">Á núlli</p>
+          <div className="mt-3 grid grid-cols-2 divide-x divide-[#3a463e]">
             {losers.map((player) => (
               <div
                 key={player.id}
-                className="flex flex-col items-center gap-2 rounded-lg border border-flame/30 bg-surface-raised px-3 py-4"
+                className="flex flex-col items-center gap-2 px-3 py-2"
               >
                 <Avatar player={player} size="lg" />
-                <span className="display text-center text-lg text-ink">
+                <span className="display text-center text-xl text-tape">
                   {player.shortName}
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
-            <span className="eyebrow">Gerðu það</span>
-            <span className="display text-sm text-ink-muted">
+          <div className="mt-4 flex items-center justify-between border-t border-[#3a463e] pt-4">
+            <span className="eyebrow text-[#c9d1cb]">Gerðu það</span>
+            <span className="display text-lg text-tape">
               {winners.map((p) => p.shortName).join(" & ")}
             </span>
           </div>
         </div>
 
-        <p className="animate-rise mt-4 text-center text-sm text-ink-muted">
+        <p className="animate-rise mt-4 text-center text-sm text-[#c9d1cb]">
           Ekki eitt stig. Þetta fer í bækurnar.
         </p>
 
         <button
           type="button"
           onClick={close}
-          className="display mt-5 w-full rounded-lg border border-flame/60 bg-flame/10 text-base tracking-[0.06em] text-flame"
+          className="display mt-5 w-full rounded-lg bg-shuttle text-xl tracking-[0.04em] text-ink"
           style={{ height: "3.5rem" }}
         >
           Halda áfram
         </button>
       </div>
-    </div>
-  );
-}
-
-/** A slow pulse of flame at the edges: the room, not the confetti. */
-function Vignette() {
-  return (
-    <div
-      className="pointer-events-none absolute inset-0"
-      aria-hidden
-      style={{
-        background:
-          "radial-gradient(ellipse at center, transparent 45%, rgba(255, 122, 61, 0.18) 100%)",
-        animation: "smoulder 2.6s ease-in-out infinite alternate",
-      }}
-    >
-      <style>{`
-        @keyframes smoulder {
-          from { opacity: .55; }
-          to { opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 }

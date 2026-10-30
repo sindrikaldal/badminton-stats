@@ -26,7 +26,7 @@ export function GateForm({ next }: { next: string }) {
       <input type="hidden" name="naest" value={next} />
 
       {state && !state.ok ? (
-        <p className="mt-3 text-center text-sm text-flame">{state.error}</p>
+        <p className="mt-3 text-center text-sm text-danger">{state.error}</p>
       ) : null}
 
       <Submit />
@@ -40,7 +40,7 @@ function Submit() {
     <button
       type="submit"
       disabled={pending}
-      className="display mt-4 h-13 w-full rounded-lg bg-win text-base tracking-[0.06em] text-canvas transition-opacity disabled:opacity-50"
+      className="display mt-4 h-13 w-full rounded-lg bg-shuttle text-xl tracking-[0.04em] text-ink transition-opacity disabled:opacity-50"
       style={{ height: "3.25rem" }}
     >
       {pending ? "Athuga…" : "Inn á völlinn"}

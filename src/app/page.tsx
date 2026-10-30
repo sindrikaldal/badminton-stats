@@ -20,6 +20,7 @@ import {
 } from "@/lib/domain/streaks";
 import { isSevenNil, winnersOf } from "@/lib/domain/types";
 import * as repo from "@/lib/repo";
+import { Arrow } from "@/components/Arrow";
 
 export const dynamic = "force-dynamic";
 
@@ -99,7 +100,7 @@ export default async function TonightPage({
           </p>
           <Link
             href="/?nytt=1"
-            className="display mt-4 flex items-center justify-center rounded-lg bg-win text-base tracking-[0.06em] text-canvas"
+            className="display mt-4 flex items-center justify-center rounded-lg bg-shuttle text-xl tracking-[0.04em] text-ink"
             style={{ height: "3.5rem" }}
           >
             Byrja nýtt kvöld
@@ -148,8 +149,9 @@ export default async function TonightPage({
         <WhoAmI players={players} />
 
         {!isOpen ? (
-          <Link href="/" className="eyebrow">
-            ← Öll kvöld
+          <Link href="/" className="eyebrow inline-flex min-h-11 items-center gap-1.5">
+            <Arrow direction="left" />
+            Öll kvöld
           </Link>
         ) : null}
 

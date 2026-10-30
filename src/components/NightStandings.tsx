@@ -27,7 +27,7 @@ export function NightStandings({
 
   return (
     <>
-      <ul className="card divide-y divide-line/60">
+      <ul className="card divide-y divide-line overflow-hidden">
         {lines.map((line) => {
           const player = byId.get(line.playerId);
           if (!player) return null;
@@ -38,19 +38,14 @@ export function NightStandings({
           return (
             <li
               key={line.playerId}
-              className="relative flex items-center gap-3 px-3 py-2.5"
+              className={`flex items-center gap-3 px-3 py-2.5 ${
+                leading.has(line.playerId) ? "bg-win-dim" : ""
+              }`}
             >
-              {leading.has(line.playerId) ? (
-                <span
-                  className="absolute inset-y-0 left-0 w-[3px] rounded-l bg-win"
-                  aria-hidden
-                />
-              ) : null}
-
               <Avatar player={player} size="sm" dimmed={idle} />
 
               <span
-                className={`display min-w-0 flex-1 truncate text-sm ${
+                className={`display min-w-0 flex-1 truncate text-lg ${
                   idle ? "text-ink-faint" : "text-ink"
                 }`}
               >
@@ -58,18 +53,18 @@ export function NightStandings({
               </span>
 
               {hot ? (
-                <span className="display shrink-0 rounded border border-flame/50 bg-flame/10 px-1.5 py-0.5 text-[10px] tracking-[0.08em] text-flame">
+                <span className="display shrink-0 rounded bg-shuttle px-1.5 py-0.5 text-sm tracking-[0.04em] text-ink">
                   {line.currentStreak} í röð
                 </span>
               ) : null}
 
               {idle ? (
-                <span className="shrink-0 text-[11px] text-ink-faint">
+                <span className="shrink-0 text-sm text-ink-faint">
                   Ekki spilað
                 </span>
               ) : (
                 <span
-                  className={`display tnum shrink-0 text-sm ${
+                  className={`display tnum shrink-0 text-xl ${
                     line.wins > line.losses ? "text-win" : "text-ink-muted"
                   }`}
                 >
@@ -82,7 +77,7 @@ export function NightStandings({
       </ul>
 
       {anyBelowBar ? (
-        <p className="mt-2 text-[11px] text-ink-faint">
+        <p className="mt-2 text-xs text-ink-faint">
           Þarf {qualifyThreshold === 1 ? "1 leik" : `${qualifyThreshold} leiki`}{" "}
           í kvöld til að teljast með.
         </p>

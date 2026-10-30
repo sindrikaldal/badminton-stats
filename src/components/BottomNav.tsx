@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS = [
-  { href: "/", label: "Kvöldið", icon: FlameIcon },
-  { href: "/leikir", label: "Leikir", icon: RacketIcon },
+  { href: "/", label: "Kvöldið", icon: ShuttleIcon },
+  { href: "/leikir", label: "Leikir", icon: CourtIcon },
   { href: "/tolfraedi", label: "Tölfræði", icon: ChartIcon },
   { href: "/leikmenn", label: "Leikmenn", icon: PeopleIcon },
 ];
@@ -15,7 +15,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="sticky bottom-0 z-40 border-t border-line bg-canvas/95 backdrop-blur"
+      className="sticky bottom-0 z-40 bg-ink"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <ul className="mx-auto flex max-w-[480px]">
@@ -27,12 +27,14 @@ export function BottomNav() {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`flex h-16 flex-col items-center justify-center gap-1 transition-colors ${
-                  active ? "text-win" : "text-ink-faint active:text-ink-muted"
+                className={`flex h-16 flex-col items-center justify-center gap-1 border-t-[3px] transition-colors ${
+                  active
+                    ? "border-shuttle text-shuttle"
+                    : "border-transparent text-[#9aa59e] active:text-tape"
                 }`}
               >
                 <Icon active={active} />
-                <span className="display text-[11px] tracking-[0.1em]">
+                <span className="display text-[0.8125rem] tracking-[0.06em]">
                   {label}
                 </span>
               </Link>
@@ -46,54 +48,59 @@ export function BottomNav() {
 
 type IconProps = { active?: boolean };
 
-function FlameIcon({ active }: IconProps) {
+const stroke = {
+  stroke: "currentColor",
+  strokeWidth: 1.8,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+} as const;
+
+function ShuttleIcon({ active }: IconProps) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 3c.6 3.2-1.4 4.4-2.6 5.8C8 10.4 7 11.8 7 14a5 5 0 0 0 10 0c0-2.4-1.3-4-2.4-5.4-.6 1-1.3 1.6-2 1.8.4-2.6-.2-5.4-.6-7.4Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-        fill={active ? "currentColor" : "none"}
-        fillOpacity={active ? 0.16 : 0}
-      />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <g {...stroke}>
+        <path
+          d="M7 3.5 10 15h4l3-11.5c-1.5-.6-3.2-1-5-1s-3.5.4-5 1Z"
+          fill={active ? "currentColor" : "none"}
+          fillOpacity={active ? 0.2 : 0}
+        />
+        <path d="M12 2.6V15M9.6 3l1.2 12M14.4 3l-1.2 12M8 8.5h8" />
+        <path
+          d="M10 15h4v1.5a2 2 0 0 1-4 0V15Z"
+          fill="currentColor"
+        />
+      </g>
     </svg>
   );
 }
 
-function RacketIcon({ active }: IconProps) {
+function CourtIcon({ active }: IconProps) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <ellipse
-        cx="14"
-        cy="9"
-        rx="6"
-        ry="7"
-        transform="rotate(28 14 9)"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        fill={active ? "currentColor" : "none"}
-        fillOpacity={active ? 0.16 : 0}
-      />
-      <path
-        d="m9 14-5 6"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <g {...stroke}>
+        <rect
+          x="6"
+          y="3"
+          width="12"
+          height="18"
+          rx="1"
+          fill={active ? "currentColor" : "none"}
+          fillOpacity={active ? 0.2 : 0}
+        />
+        <path d="M6 8.5h12M6 15.5h12M12 3v5.5M12 15.5V21" />
+        <path d="M3.5 12h17" strokeWidth="2.4" />
+      </g>
     </svg>
   );
 }
 
 function ChartIcon({ active }: IconProps) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
       <g
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
+        {...stroke}
         fill={active ? "currentColor" : "none"}
-        fillOpacity={active ? 0.16 : 0}
+        fillOpacity={active ? 0.2 : 0}
       >
         <rect x="4" y="12" width="4" height="8" rx="1" />
         <rect x="10" y="7" width="4" height="13" rx="1" />
@@ -105,14 +112,11 @@ function ChartIcon({ active }: IconProps) {
 
 function PeopleIcon({ active }: IconProps) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
       <g
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        {...stroke}
         fill={active ? "currentColor" : "none"}
-        fillOpacity={active ? 0.16 : 0}
+        fillOpacity={active ? 0.2 : 0}
       >
         <circle cx="9" cy="8" r="3.2" />
         <path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6S13.9 16 14.5 19" />

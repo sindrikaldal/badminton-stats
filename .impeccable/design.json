@@ -1,0 +1,500 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-30T09:04:24+00:00",
+  "title": "Design System: Badd Boys",
+  "extensions": {
+    "colorMeta": {
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Hall Floor",
+        "canonical": "oklch(95.4% 0.007 132)",
+        "tonalRamp": [
+          "oklch(15% 0.001 132)",
+          "oklch(26% 0.003 132)",
+          "oklch(38% 0.005 132)",
+          "oklch(49% 0.006 132)",
+          "oklch(61% 0.006 132)",
+          "oklch(72% 0.005 132)",
+          "oklch(84% 0.003 132)",
+          "oklch(95% 0.001 132)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Panel White",
+        "canonical": "oklch(100.0% 0.000 90)",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(26% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(49% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(72% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "surface-raised": {
+        "role": "neutral",
+        "displayName": "Raised Floor",
+        "canonical": "oklch(92.5% 0.010 141)",
+        "tonalRamp": [
+          "oklch(15% 0.001 141)",
+          "oklch(26% 0.004 141)",
+          "oklch(38% 0.006 141)",
+          "oklch(49% 0.008 141)",
+          "oklch(61% 0.008 141)",
+          "oklch(72% 0.006 141)",
+          "oklch(84% 0.004 141)",
+          "oklch(95% 0.001 141)"
+        ]
+      },
+      "surface-input": {
+        "role": "neutral",
+        "displayName": "Panel White (input)",
+        "canonical": "oklch(100.0% 0.000 90)",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(26% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(49% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(72% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Seam",
+        "canonical": "oklch(88.7% 0.013 142)",
+        "tonalRamp": [
+          "oklch(15% 0.002 142)",
+          "oklch(26% 0.005 142)",
+          "oklch(38% 0.008 142)",
+          "oklch(49% 0.011 142)",
+          "oklch(61% 0.011 142)",
+          "oklch(72% 0.008 142)",
+          "oklch(84% 0.005 142)",
+          "oklch(95% 0.002 142)"
+        ]
+      },
+      "line-bright": {
+        "role": "neutral",
+        "displayName": "Bright Seam",
+        "canonical": "oklch(80.6% 0.019 143)",
+        "tonalRamp": [
+          "oklch(15% 0.003 143)",
+          "oklch(26% 0.007 143)",
+          "oklch(38% 0.012 143)",
+          "oklch(49% 0.016 143)",
+          "oklch(61% 0.016 143)",
+          "oklch(72% 0.012 143)",
+          "oklch(84% 0.007 143)",
+          "oklch(95% 0.003 143)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Court Ink",
+        "canonical": "oklch(23.2% 0.018 158)",
+        "tonalRamp": [
+          "oklch(15% 0.003 158)",
+          "oklch(26% 0.007 158)",
+          "oklch(38% 0.011 158)",
+          "oklch(49% 0.016 158)",
+          "oklch(61% 0.016 158)",
+          "oklch(72% 0.011 158)",
+          "oklch(84% 0.007 158)",
+          "oklch(95% 0.003 158)"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "oklch(42.5% 0.020 156)",
+        "tonalRamp": [
+          "oklch(15% 0.003 156)",
+          "oklch(26% 0.007 156)",
+          "oklch(38% 0.012 156)",
+          "oklch(49% 0.018 156)",
+          "oklch(61% 0.018 156)",
+          "oklch(72% 0.012 156)",
+          "oklch(84% 0.007 156)",
+          "oklch(95% 0.003 156)"
+        ]
+      },
+      "ink-faint": {
+        "role": "neutral",
+        "displayName": "Faint Ink",
+        "canonical": "oklch(51.2% 0.019 156)",
+        "tonalRamp": [
+          "oklch(15% 0.003 156)",
+          "oklch(26% 0.007 156)",
+          "oklch(38% 0.012 156)",
+          "oklch(49% 0.017 156)",
+          "oklch(61% 0.017 156)",
+          "oklch(72% 0.012 156)",
+          "oklch(84% 0.007 156)",
+          "oklch(95% 0.003 156)"
+        ]
+      },
+      "win": {
+        "role": "primary",
+        "displayName": "Holding Green",
+        "canonical": "oklch(46.9% 0.100 157)",
+        "tonalRamp": [
+          "oklch(15% 0.015 157)",
+          "oklch(26% 0.037 157)",
+          "oklch(38% 0.062 157)",
+          "oklch(49% 0.088 157)",
+          "oklch(61% 0.088 157)",
+          "oklch(72% 0.062 157)",
+          "oklch(84% 0.037 157)",
+          "oklch(95% 0.015 157)"
+        ]
+      },
+      "win-dim": {
+        "role": "primary",
+        "displayName": "Win Wash",
+        "canonical": "oklch(92.4% 0.024 159)",
+        "tonalRamp": [
+          "oklch(15% 0.004 159)",
+          "oklch(26% 0.009 159)",
+          "oklch(38% 0.015 159)",
+          "oklch(49% 0.021 159)",
+          "oklch(61% 0.021 159)",
+          "oklch(72% 0.015 159)",
+          "oklch(84% 0.009 159)",
+          "oklch(95% 0.004 159)"
+        ]
+      },
+      "court": {
+        "role": "primary",
+        "displayName": "Court Mat Green",
+        "canonical": "oklch(51.5% 0.110 157)",
+        "tonalRamp": [
+          "oklch(15% 0.017 157)",
+          "oklch(26% 0.040 157)",
+          "oklch(38% 0.068 157)",
+          "oklch(49% 0.096 157)",
+          "oklch(61% 0.096 157)",
+          "oklch(72% 0.068 157)",
+          "oklch(84% 0.040 157)",
+          "oklch(95% 0.017 157)"
+        ]
+      },
+      "court-deep": {
+        "role": "primary",
+        "displayName": "Net Shadow Green",
+        "canonical": "oklch(40.8% 0.082 160)",
+        "tonalRamp": [
+          "oklch(15% 0.012 160)",
+          "oklch(26% 0.030 160)",
+          "oklch(38% 0.051 160)",
+          "oklch(49% 0.072 160)",
+          "oklch(61% 0.072 160)",
+          "oklch(72% 0.051 160)",
+          "oklch(84% 0.030 160)",
+          "oklch(95% 0.012 160)"
+        ]
+      },
+      "tape": {
+        "role": "neutral",
+        "displayName": "Line Tape",
+        "canonical": "oklch(100.0% 0.000 90)",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(26% 0.000 90)",
+          "oklch(38% 0.000 90)",
+          "oklch(49% 0.000 90)",
+          "oklch(61% 0.000 90)",
+          "oklch(72% 0.000 90)",
+          "oklch(84% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "challenge": {
+        "role": "tertiary",
+        "displayName": "Challenger Blue",
+        "canonical": "oklch(43.5% 0.128 258)",
+        "tonalRamp": [
+          "oklch(15% 0.019 258)",
+          "oklch(26% 0.047 258)",
+          "oklch(38% 0.079 258)",
+          "oklch(49% 0.112 258)",
+          "oklch(61% 0.112 258)",
+          "oklch(72% 0.079 258)",
+          "oklch(84% 0.047 258)",
+          "oklch(95% 0.019 258)"
+        ]
+      },
+      "challenge-dim": {
+        "role": "tertiary",
+        "displayName": "Challenger Wash",
+        "canonical": "oklch(92.2% 0.020 257)",
+        "tonalRamp": [
+          "oklch(15% 0.003 257)",
+          "oklch(26% 0.007 257)",
+          "oklch(38% 0.012 257)",
+          "oklch(49% 0.018 257)",
+          "oklch(61% 0.018 257)",
+          "oklch(72% 0.012 257)",
+          "oklch(84% 0.007 257)",
+          "oklch(95% 0.003 257)"
+        ]
+      },
+      "shuttle": {
+        "role": "secondary",
+        "displayName": "Shuttle-Tube Yellow",
+        "canonical": "oklch(86.8% 0.162 96)",
+        "tonalRamp": [
+          "oklch(15% 0.024 96)",
+          "oklch(26% 0.059 96)",
+          "oklch(38% 0.100 96)",
+          "oklch(49% 0.141 96)",
+          "oklch(61% 0.141 96)",
+          "oklch(72% 0.100 96)",
+          "oklch(84% 0.059 96)",
+          "oklch(95% 0.024 96)"
+        ]
+      },
+      "flame": {
+        "role": "secondary",
+        "displayName": "Shuttle Ink",
+        "canonical": "oklch(50.8% 0.108 73)",
+        "tonalRamp": [
+          "oklch(15% 0.016 73)",
+          "oklch(26% 0.039 73)",
+          "oklch(38% 0.067 73)",
+          "oklch(49% 0.094 73)",
+          "oklch(61% 0.094 73)",
+          "oklch(72% 0.067 73)",
+          "oklch(84% 0.039 73)",
+          "oklch(95% 0.016 73)"
+        ]
+      },
+      "danger": {
+        "role": "error",
+        "displayName": "Danger Red",
+        "canonical": "oklch(50.0% 0.182 30)",
+        "tonalRamp": [
+          "oklch(15% 0.027 30)",
+          "oklch(26% 0.066 30)",
+          "oklch(38% 0.113 30)",
+          "oklch(49% 0.159 30)",
+          "oklch(61% 0.159 30)",
+          "oklch(72% 0.113 30)",
+          "oklch(84% 0.066 30)",
+          "oklch(95% 0.027 30)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "score": {
+        "displayName": "Score",
+        "purpose": "Court scores and full-screen numerals; tabular, 62% width."
+      },
+      "display": {
+        "displayName": "Display",
+        "purpose": "The page's working heading and full-screen headlines."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles and names in service boxes."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Player names in rows, win–loss figures, card headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Sentences: explanations, notes, errors."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Meta lines, dates, game numbers, header status."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form labels, region labels and back links; never a kicker over a heading."
+      }
+    },
+    "shadows": [
+      {
+        "name": "mark-win",
+        "value": "inset 0 0 0 2px var(--color-win)",
+        "purpose": "A card that is live, leading or a record."
+      },
+      {
+        "name": "mark-challenge",
+        "value": "inset 0 0 0 2px var(--color-challenge)",
+        "purpose": "Challenger equivalent of the live mark."
+      },
+      {
+        "name": "mark-flame",
+        "value": "inset 0 0 0 2px var(--color-shuttle)",
+        "purpose": "A card about a run or honor."
+      }
+    ],
+    "motion": [
+      {
+        "name": "pop-in",
+        "value": "0.4s cubic-bezier(0.16, 1, 0.3, 1); from opacity 0, scale(0.92) translateY(8px)",
+        "purpose": "Headline entrance of full-screen moments."
+      },
+      {
+        "name": "rise",
+        "value": "0.3s cubic-bezier(0.16, 1, 0.3, 1); from opacity 0, translateY(10px)",
+        "purpose": "Cards following a full-screen moment's headline."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation and transition duration 0.01ms",
+        "purpose": "Honors prefers-reduced-motion globally."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "column",
+        "value": "480px"
+      },
+      {
+        "name": "moment-column",
+        "value": "420px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one full-width shuttle-yellow action on a screen: log the game, continue.",
+      "html": "<button class=\"ds-btn-primary\">Skrá úrslit 21–17</button><button class=\"ds-btn-primary\" disabled>Veldu fjóra leikmenn</button>",
+      "css": ".ds-btn-primary{font-family:var(--font-display,'Archivo','Arial Narrow',sans-serif);font-stretch:62%;font-weight:800;letter-spacing:.01em;text-transform:uppercase;display:block;width:100%;height:60px;margin-top:8px;border:0;border-radius:var(--radius-lg,4px);background:var(--color-shuttle,#f4d23c);color:var(--color-ink,#16201a);font-size:1.5rem;cursor:pointer;transition:background-color .15s}.ds-btn-primary:active{background:#e6c22a}.ds-btn-primary:focus-visible{outline:3px solid var(--color-challenge,#1d4f96);outline-offset:2px}.ds-btn-primary:disabled{background:var(--color-surface-raised,#e3e8e2);color:var(--color-ink-faint,#5e6a62);cursor:default}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Blue full-width action for anything that is not the screen's one yellow action.",
+      "html": "<button class=\"ds-btn-secondary\">Opna kvöldið aftur</button>",
+      "css": ".ds-btn-secondary{font-family:var(--font-display,'Archivo','Arial Narrow',sans-serif);font-stretch:62%;font-weight:800;letter-spacing:.01em;text-transform:uppercase;display:block;width:100%;padding:12px;border:0;border-radius:var(--radius-lg,4px);background:var(--color-challenge,#1d4f96);color:var(--color-canvas,#eef1ec);font-size:.875rem;cursor:pointer}.ds-btn-secondary:hover{filter:brightness(1.08)}.ds-btn-secondary:focus-visible{outline:3px solid var(--color-challenge,#1d4f96);outline-offset:2px}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "White field with a seam stroke; the stroke turns challenger blue on focus.",
+      "html": "<label class=\"ds-label\" for=\"ds-code\">Aðgangskóði</label><input id=\"ds-code\" class=\"ds-input\" value=\"1234\">",
+      "css": ".ds-label{display:block;font-family:var(--font-display,'Archivo',sans-serif);font-stretch:75%;font-weight:700;font-size:.8125rem;letter-spacing:.06em;text-transform:uppercase;color:var(--color-ink-faint,#5e6a62)}.ds-input{font-family:var(--font-display,'Archivo','Arial Narrow',sans-serif);font-stretch:62%;font-weight:800;letter-spacing:.01em;text-transform:uppercase;display:block;width:100%;margin-top:8px;padding:14px 16px;border:1px solid var(--color-line,#d5dcd4);border-radius:var(--radius-lg,4px);background:var(--color-surface-input,#fff);color:var(--color-ink,#16201a);font-size:1.5rem;letter-spacing:.2em;text-align:center;outline:none}.ds-input:focus{border-color:var(--color-challenge,#1d4f96)}"
+    },
+    {
+      "name": "Player Chips",
+      "kind": "chip",
+      "refersTo": "player-chip",
+      "description": "Pills for picking players; fill shows which side of the net each player is on.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-chip-a\" aria-pressed=\"true\">Jón</button><button class=\"ds-chip ds-chip-b\" aria-pressed=\"true\">Siggi</button><button class=\"ds-chip\" aria-pressed=\"false\">Óli</button></div>",
+      "css": ".ds-chips{display:flex;flex-wrap:wrap;gap:6px}.ds-chip{font-family:var(--font-display,'Archivo','Arial Narrow',sans-serif);font-stretch:62%;font-weight:800;letter-spacing:.01em;text-transform:uppercase;height:36px;padding:0 12px;border:2px solid var(--color-line,#d5dcd4);border-radius:9999px;background:var(--color-surface,#fff);color:var(--color-ink,#16201a);font-size:1rem;cursor:pointer;transition:background-color .15s,border-color .15s}.ds-chip:hover{border-color:var(--color-line-bright,#b9c3b8)}.ds-chip:focus-visible{outline:3px solid var(--color-challenge,#1d4f96);outline-offset:2px}.ds-chip-a,.ds-chip-a:hover{border-color:var(--color-win,#1a6b43);background:var(--color-win,#1a6b43);color:#fff}.ds-chip-b,.ds-chip-b:hover{border-color:var(--color-challenge,#1d4f96);background:var(--color-challenge,#1d4f96);color:#fff}"
+    },
+    {
+      "name": "Standings Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A flat white field holding a divided list; the leader row gets the win wash, a run gets a yellow badge.",
+      "html": "<ul class=\"ds-card\"><li class=\"ds-row ds-row-lead\"><span class=\"ds-av ds-av-court\">JÓ</span><span class=\"ds-name\">Jón</span><span class=\"ds-run\">2 í röð</span><span class=\"ds-wl ds-wl-win\">4–1</span></li><li class=\"ds-row\"><span class=\"ds-av ds-av-ink\">SI</span><span class=\"ds-name\">Siggi</span><span class=\"ds-wl\">2–3</span></li><li class=\"ds-row\"><span class=\"ds-av ds-av-white\">ÓL</span><span class=\"ds-name\">Óli</span><span class=\"ds-seven\">7–0</span><span class=\"ds-wl\">1–1</span></li></ul>",
+      "css": ".ds-card{list-style:none;margin:0;padding:0;overflow:hidden;background:var(--color-surface,#fff);border:1px solid transparent;border-radius:var(--radius-card,4px)}.ds-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-top:1px solid var(--color-line,#d5dcd4)}.ds-row:first-child{border-top:0}.ds-row-lead{background:var(--color-win-dim,#d9ebe0)}.ds-av{font-family:var(--font-display,'Archivo','Arial Narrow',sans-serif);font-stretch:62%;font-weight:800;letter-spacing:.01em;text-transform:uppercase;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9999px;border:2px solid;font-size:.75rem;letter-spacing:.04em}.ds-av-ink{background:var(--color-ink,#16201a);border-color:var(--color-ink,#16201a);color:#fff}.ds-av-court{background:var(--color-court,#1f7a4d);border-color:var(--color-court,#1f7a4d);color:#fff}.ds-av-white{background:#fff;border-color:var(--color-ink,#16201a);color:var(--color-ink,#16201a)}.ds-name{font-family:var(--font-display,'Archivo','Arial Narrow',sans-serif);font-stretch:62%;font-weight:800;letter-spacing:.01em;text-transform:uppercase;flex:1;font-size:1.125rem;color:var(--color-ink,#16201a)}.ds-run,.ds-seven{font-family:var(--font-display,'Archivo','Arial Narrow',sans-serif);font-stretch:62%;font-weight:800;letter-spacing:.01em;text-transform:uppercase;padding:2px 6px;border-radius:4px;font-size:.875rem;letter-spacing:.04em}.ds-run{background:var(--color-shuttle,#f4d23c);color:var(--color-ink,#16201a)}.ds-seven{background:var(--color-ink,#16201a);color:var(--color-canvas,#eef1ec)}.ds-wl{font-family:var(--font-display,'Archivo','Arial Narrow',sans-serif);font-stretch:62%;font-weight:800;letter-spacing:.01em;text-transform:uppercase;font-variant-numeric:tabular-nums;font-size:1.25rem;color:var(--color-ink-muted,#46524a)}.ds-wl-win{color:var(--color-win,#1a6b43)}"
+    },
+    {
+      "name": "Tab Bar",
+      "kind": "nav",
+      "refersTo": "tab-bar",
+      "description": "Ink band with four tabs; the active tab turns shuttle yellow with a 3px top bar.",
+      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab ds-tab-on\" href=\"#\" aria-current=\"page\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 3.5 10 15h4l3-11.5c-1.5-.6-3.2-1-5-1s-3.5.4-5 1Z\" fill=\"currentColor\" fill-opacity=\".2\"/><path d=\"M12 2.6V15M9.6 3l1.2 12M14.4 3l-1.2 12M8 8.5h8\"/><path d=\"M10 15h4v1.5a2 2 0 0 1-4 0V15Z\" fill=\"currentColor\"/></svg><span>Kvöldið</span></a><a class=\"ds-tab\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"6\" y=\"3\" width=\"12\" height=\"18\" rx=\"1\"/><path d=\"M6 8.5h12M6 15.5h12M12 3v5.5M12 15.5V21\"/><path d=\"M3.5 12h17\" stroke-width=\"2.4\"/></svg><span>Leikir</span></a><a class=\"ds-tab\" href=\"#\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"4\" y=\"12\" width=\"4\" height=\"8\" rx=\"1\"/><rect x=\"10\" y=\"7\" width=\"4\" height=\"13\" rx=\"1\"/><rect x=\"16\" y=\"10\" width=\"4\" height=\"10\" rx=\"1\"/></svg><span>Tölfræði</span></a></nav>",
+      "css": ".ds-tabs{display:flex;background:var(--color-ink,#16201a)}.ds-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:64px;border-top:3px solid transparent;color:#9aa59e;text-decoration:none;transition:color .15s}.ds-tab span{font-family:var(--font-display,'Archivo','Arial Narrow',sans-serif);font-stretch:62%;font-weight:800;letter-spacing:.01em;text-transform:uppercase;font-size:.8125rem;letter-spacing:.06em}.ds-tab:hover,.ds-tab:active{color:#fff}.ds-tab:focus-visible{outline:3px solid var(--color-challenge,#1d4f96);outline-offset:-3px}.ds-tab-on,.ds-tab-on:hover{border-top-color:var(--color-shuttle,#f4d23c);color:var(--color-shuttle,#f4d23c)}"
+    },
+    {
+      "name": "Court Score Pad",
+      "kind": "custom",
+      "refersTo": "court",
+      "description": "Signature: the score pad as a top-down doubles court, white tape on green, scores facing across the net.",
+      "html": "<div class=\"ds-court\"><div class=\"ds-tapebox\"><div class=\"ds-alley ds-line-b\"><span class=\"ds-side ds-side-a\">Lið A</span><span class=\"ds-shorts\"><button class=\"ds-short\">Setja 11</button><button class=\"ds-short\">7–0</button></span></div><div class=\"ds-boxes ds-line-b\"><button class=\"ds-box\">Jón</button><button class=\"ds-box\">Óli</button></div><div class=\"ds-front\"><button class=\"ds-minus\" aria-label=\"minus\">−</button><output class=\"ds-score ds-lead\">11</output><button class=\"ds-plus\" aria-label=\"plus\">+</button></div><div class=\"ds-net\"><button class=\"ds-swap\" aria-label=\"swap\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M8 4v15l-3-3M16 20V5l3 3\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></button></div><div class=\"ds-front\"><button class=\"ds-minus\" aria-label=\"minus\">−</button><output class=\"ds-score\">7</output><button class=\"ds-plus\" aria-label=\"plus\">+</button></div><div class=\"ds-boxes ds-line-t\"><button class=\"ds-box\">Siggi</button><button class=\"ds-box\"><span class=\"ds-empty\">Tómt</span></button></div><div class=\"ds-alley ds-line-t\"><span class=\"ds-side ds-side-b\">Lið B</span><span class=\"ds-shorts\"><button class=\"ds-short\">Setja 11</button><button class=\"ds-short\">7–0</button></span></div></div></div>",
+      "css": ".ds-court{background:var(--color-court,#1f7a4d);padding:12px 16px}.ds-tapebox{border:3px solid #fff}.ds-court button{cursor:pointer}.ds-line-b{border-bottom:3px solid #fff}.ds-line-t{border-top:3px solid #fff}.ds-alley{display:flex;align-items:center;justify-content:space-between;gap:8px;height:44px;padding:0 10px}.ds-side,.ds-short,.ds-box,.ds-minus,.ds-plus,.ds-score{font-family:var(--font-display,'Archivo','Arial Narrow',sans-serif);font-stretch:62%;font-weight:800;letter-spacing:.01em;text-transform:uppercase;}.ds-side{padding:2px 10px;border-radius:4px;font-size:1rem;letter-spacing:.04em}.ds-side-a{background:#fff;color:var(--color-win,#1a6b43)}.ds-side-b{background:var(--color-challenge,#1d4f96);color:#fff}.ds-shorts{display:flex;gap:6px}.ds-short{height:32px;padding:0 12px;border:2px solid #fff;border-radius:4px;background:transparent;color:#fff;font-size:.875rem;letter-spacing:.04em}.ds-short:hover,.ds-short:active{background:#fff;color:var(--color-court,#1f7a4d)}.ds-boxes{display:grid;grid-template-columns:1fr 1fr}.ds-box{height:48px;border:0;background:transparent;color:#fff;font-size:1.375rem}.ds-box:first-child{border-right:3px solid #fff}.ds-empty{font-family:var(--font-body,'Archivo',sans-serif);font-stretch:100%;font-weight:500;font-size:.875rem;text-transform:none}.ds-front{display:flex;align-items:center;justify-content:space-between;padding:6px 10px}.ds-minus,.ds-plus{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:4px;font-size:2rem}.ds-minus{border:3px solid #fff;background:transparent;color:#fff}.ds-minus:active{background:var(--color-court-deep,#14573a)}.ds-plus{border:0;background:#fff;color:var(--color-court,#1f7a4d)}.ds-plus:active{background:var(--color-shuttle,#f4d23c)}.ds-score{font-size:4rem;line-height:.85;color:#fff;font-variant-numeric:tabular-nums}.ds-lead{color:var(--color-shuttle,#f4d23c)}.ds-net{display:flex;align-items:center;justify-content:center;height:40px;border-top:4px solid #fff;background-color:var(--color-court-deep,#14573a);background-image:linear-gradient(to right,rgb(255 255 255/.22) 1px,transparent 1px),linear-gradient(to bottom,rgb(255 255 255/.22) 1px,transparent 1px);background-size:7px 7px}.ds-swap{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:9999px;border:3px solid var(--color-court-deep,#14573a);background:#fff;color:var(--color-court,#1f7a4d)}.ds-swap:active{background:var(--color-shuttle,#f4d23c)}.ds-court button:focus-visible{outline:3px solid var(--color-challenge,#1d4f96);outline-offset:2px}"
+    },
+    {
+      "name": "Run Strip",
+      "kind": "custom",
+      "refersTo": "badge-run",
+      "description": "Strip above the court naming the pair holding it; turns yellow when the pair must split.",
+      "html": "<div class=\"ds-strip\"><span class=\"ds-count ds-count-hot\">2</span><div><p class=\"ds-pair\">Jón &amp; Óli</p><p class=\"ds-note\">2 í röð · 1 í heiðurinn</p></div></div><div class=\"ds-strip ds-strip-split\"><span class=\"ds-count ds-count-split\">3</span><div><p class=\"ds-pair\">Jón &amp; Óli</p><p class=\"ds-note\">3 í röð — parið splittast núna</p></div></div>",
+      "css": ".ds-strip{display:flex;align-items:center;gap:12px;margin-top:8px;padding:10px 12px;border-radius:4px;background:var(--color-surface,#fff)}.ds-strip-split{background:var(--color-shuttle,#f4d23c)}.ds-count{font-family:var(--font-display,'Archivo','Arial Narrow',sans-serif);font-stretch:62%;font-weight:800;letter-spacing:.01em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;flex-shrink:0;width:40px;height:40px;border-radius:4px;font-size:1.625rem;font-variant-numeric:tabular-nums}.ds-count-hot{background:var(--color-shuttle,#f4d23c);color:var(--color-ink,#16201a)}.ds-count-split{background:var(--color-ink,#16201a);color:var(--color-shuttle,#f4d23c)}.ds-pair{font-family:var(--font-display,'Archivo','Arial Narrow',sans-serif);font-stretch:62%;font-weight:800;letter-spacing:.01em;text-transform:uppercase;margin:0;font-size:1.125rem;line-height:1.25;color:var(--color-ink,#16201a)}.ds-note{margin:0;font-size:.875rem;color:var(--color-ink-muted,#46524a)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Hall Is the Interface",
+    "overview": "The app is drawn from the sports hall it is used in. The ground is a cool, light hall floor under bright overhead lighting; content sits on it as flat white fields, like panels laid on the boards. The court mat is green, the only marks on green are white line tape, and the one bright thing you reach for is shuttle-tube yellow. Nothing glows and nothing floats: the previous dark arena with neon glows was deliberately left behind, and so was the generic white rounded-card tracker.\n\nDensity is phone-courtside: one column, at most 480px, big touch targets, and every number in tabular figures so scores never jog. Type is a single family, Archivo, split by its width axis: extra-condensed heavy caps for names, scores and headings, normal width for anything you actually read. The signature is the score pad drawn as a top-down doubles court; the brand mark is the same court in miniature, with the net in yellow.\n\nFull-screen moments flip the ground rather than adding effects: a run of three turns the whole screen shuttle yellow, a 7–0 turns it ink.",
+    "keyCharacteristics": [
+      "Light hall-floor ground, white flat fields, no borders at rest, no shadows.",
+      "Court green for the court, the side holding it, and every win; white tape as the only lines on green.",
+      "Shuttle yellow for the one primary action, runs and honors; challenger blue for the other side.",
+      "Archivo throughout, width axis doing the work: 62% caps for display, normal width for body.",
+      "Tight 4px corners, like taped lines; pills only for players and toggles.",
+      "An ink tab bar anchors the bottom."
+    ],
+    "rules": [
+      {
+        "name": "The Tape Rule",
+        "body": "On green, the only lines and text are white tape (3px strokes on the court). No tints, no greys, no outlines in other colors; the leading score is the single exception and it turns shuttle yellow.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Yellow Button Rule",
+        "body": "A screen has one shuttle-yellow action, full width, ink text. Every other action is blue, outlined or plain.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Sides Rule",
+        "body": "Green is the side holding the court and every win; blue is the challenger. Do not swap them or use either decoratively.",
+        "section": "colors"
+      },
+      {
+        "name": "The Width Axis Rule",
+        "body": "Hierarchy comes from width and weight in one family. Never introduce a second display face.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every score, record and count uses tabular figures.",
+        "section": "typography"
+      },
+      {
+        "name": "The Label Not Kicker Rule",
+        "body": "The label style names a control, a form field, a region inside a card, or a back link. It never sits above a page or section heading as a kicker.",
+        "section": "typography"
+      },
+      {
+        "name": "The No Glow Rule",
+        "body": "Nothing glows, blurs or floats. State is a solid inset edge or a fill change.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep the page on the hall floor (canvas) with flat white fields for content.",
+      "Do draw anything on green with white tape only, at 3px.",
+      "Do give each screen exactly one full-width shuttle-yellow action with ink text.",
+      "Do use green for the side holding the court and for wins, blue for the challenger.",
+      "Do set scores, names and headings in Archivo at 62% width, weight 800, uppercase, with tabular figures for numbers.",
+      "Do mark live or record state with a 2px inset edge, not a shadow.",
+      "Do keep corners at 4px, reserving pills for players, toggles and avatars."
+    ],
+    "donts": [
+      "Don't add drop shadows, glows or blurs; the dark neon arena is the rejected world.",
+      "Don't set shuttle yellow as text on the light floor; use flame for readable run text.",
+      "Don't use the label style as a kicker above a heading.",
+      "Don't introduce a second typeface or a system display face.",
+      "Don't use danger red for anything but deletion and errors.",
+      "Don't round cards beyond 4px or give them visible borders at rest."
+    ]
+  }
+}

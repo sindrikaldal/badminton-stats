@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Avatar, avatarColor } from "@/components/Avatar";
+import { Avatar } from "@/components/Avatar";
 import { MatchList } from "@/components/MatchList";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
 import { EmptyState, SectionTitle, Shell } from "@/components/Shell";
@@ -20,6 +20,7 @@ import {
 import { pairStreaksInSession } from "@/lib/domain/streaks";
 import type { Player } from "@/lib/domain/types";
 import * as repo from "@/lib/repo";
+import { Arrow } from "@/components/Arrow";
 
 export const dynamic = "force-dynamic";
 
@@ -89,30 +90,34 @@ export default async function PlayerPage({
 
   return (
     <Shell status={allTime ? "Frá upphafi" : season?.name}>
-      <Link href="/leikmenn" className="eyebrow">
-        ← Leikmenn
+      <Link href="/leikmenn" className="eyebrow inline-flex min-h-11 items-center gap-1.5">
+        <Arrow direction="left" />
+            Leikmenn
       </Link>
 
       <div className="card mt-3 p-4">
         <div className="flex items-center gap-4">
           <Avatar player={player} size="xl" />
           <div className="min-w-0">
-            {rank >= 0 && mine?.qualified ? (
-              <p
-                className="display text-xs tracking-[0.1em]"
-                style={{ color: avatarColor(player.id) }}
-              >
-                #{rank + 1} á stöðutöflunni
-              </p>
-            ) : null}
-            <h1 className="display truncate text-3xl text-ink">{player.name}</h1>
-            <p className="text-xs text-ink-faint">
+            <h1 className="display truncate text-[2.25rem] leading-none text-ink">
+              {player.name}
+            </h1>
+            <p className="mt-1 text-sm text-ink-faint">
               {player.isGuest ? "Gestur" : "Fastamaður"}
               {!player.isActive ? " · í geymslu" : ""}
             </p>
-            {mine && mine.nightsWon > 0 ? (
-              <p className="display mt-1.5 inline-flex rounded border border-win/50 bg-win/10 px-2 py-0.5 text-[11px] tracking-[0.06em] text-win">
-                {mine.nightsWon}× maður kvöldsins
+            {(rank >= 0 && mine?.qualified) || (mine && mine.nightsWon > 0) ? (
+              <p className="mt-2 flex flex-wrap gap-1.5">
+                {rank >= 0 && mine?.qualified ? (
+                  <span className="display tnum rounded bg-ink px-2 py-0.5 text-sm tracking-[0.04em] text-tape">
+                    #{rank + 1} á stöðutöflunni
+                  </span>
+                ) : null}
+                {mine && mine.nightsWon > 0 ? (
+                  <span className="display rounded bg-win-dim px-2 py-0.5 text-sm tracking-[0.04em] text-win">
+                    {mine.nightsWon}× maður kvöldsins
+                  </span>
+                ) : null}
               </p>
             ) : null}
           </div>
@@ -139,7 +144,7 @@ export default async function PlayerPage({
             <Link
               key={option.id}
               href={`/leikmenn/${playerId}?timabil=${option.id}`}
-              className={`display rounded-full border px-2.5 py-1 text-[11px] ${
+              className={`display rounded-full border px-2.5 py-1 text-xs ${
                 !allTime && option.id === season?.id
                   ? "border-win/60 bg-win/10 text-win"
                   : "border-line bg-surface-raised text-ink-faint"
@@ -150,7 +155,7 @@ export default async function PlayerPage({
           ))}
           <Link
             href={`/leikmenn/${playerId}?timabil=allt`}
-            className={`display rounded-full border px-2.5 py-1 text-[11px] ${
+            className={`display rounded-full border px-2.5 py-1 text-xs ${
               allTime
                 ? "border-win/60 bg-win/10 text-win"
                 : "border-line bg-surface-raised text-ink-faint"
@@ -170,7 +175,7 @@ export default async function PlayerPage({
       {!mine || mine.played === 0 ? null : (
         <>
           <SectionTitle>Tölfræði</SectionTitle>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="card divide-y divide-line overflow-hidden">
             <Tile
               label="Sigurhlutfall"
               value={formatPercent(mine.winRate)}
@@ -259,7 +264,7 @@ export default async function PlayerPage({
           {best ? (
             <>
               <SectionTitle>Besti meðspilari</SectionTitle>
-              <div className="card glow-win flex items-center gap-3 p-4">
+              <div className="card mark-win flex items-center gap-3 p-4">
                 <Avatar player={byId.get(best.opponent)!} size="lg" />
                 <div className="min-w-0 flex-1">
                   <p className="display truncate text-lg text-ink">
@@ -278,7 +283,7 @@ export default async function PlayerPage({
 
           <SectionTitle>Erkifjandi</SectionTitle>
           {nemesis ? (
-            <div className="card glow-flame flex items-center gap-3 p-4">
+            <div className="card mark-flame flex items-center gap-3 p-4">
               <Avatar player={byId.get(nemesis.opponent)!} size="lg" />
               <div className="min-w-0 flex-1">
                 <p className="display truncate text-lg text-ink">
@@ -339,7 +344,7 @@ function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div>
       <p className="display tnum text-xl text-ink">{value}</p>
-      <p className="text-[10px] tracking-[0.1em] text-ink-faint uppercase">
+      <p className="text-xs tracking-[0.1em] text-ink-faint uppercase">
         {label}
       </p>
     </div>
@@ -370,26 +375,20 @@ function Tile({
   tone: "win" | "challenge" | "flame" | "muted";
   compact?: boolean;
 }) {
+  // Green is for winning; everything else reads in ink.
   const color =
-    tone === "win"
-      ? "text-win"
-      : tone === "challenge"
-        ? "text-challenge"
-        : tone === "flame"
-          ? "text-flame"
-          : "text-ink-muted";
-  const glow =
-    tone === "flame" ? "glow-flame" : tone === "win" ? "glow-win" : "";
-
+    tone === "win" ? "text-win" : tone === "muted" ? "text-ink-muted" : "text-ink";
   return (
-    <div className={`card p-4 ${glow}`}>
-      <p className="eyebrow">{label}</p>
+    <div className="flex items-center justify-between gap-4 px-4 py-3">
+      <div className="min-w-0">
+        <p className="display text-lg leading-tight text-ink">{label}</p>
+        <p className="mt-0.5 text-xs text-ink-faint">{detail}</p>
+      </div>
       <p
-        className={`display tnum mt-1 ${compact ? "text-2xl" : "text-4xl"} ${color}`}
+        className={`display tnum shrink-0 leading-none ${compact ? "text-2xl" : "text-[2.25rem]"} ${color}`}
       >
         {value}
       </p>
-      <p className="mt-1 text-[11px] text-ink-faint">{detail}</p>
     </div>
   );
 }

@@ -43,7 +43,7 @@ export default async function MatchesPage({
         <SectionTitle>Kvöldin</SectionTitle>
         <Link
           href="/?nytt=1"
-          className="display mt-6 mb-3 rounded-lg bg-win px-3 py-2 text-sm tracking-[0.06em] text-canvas"
+          className="display mt-6 mb-3 rounded-lg bg-shuttle px-3 py-2 text-lg tracking-[0.06em] text-ink"
         >
           + Nýtt kvöld
         </Link>
@@ -82,7 +82,7 @@ export default async function MatchesPage({
                     <h3 className="display flex items-center gap-2 text-lg text-ink">
                       {formatIcelandicDate(session.playedOn)}
                       {session.endedAt === null ? (
-                        <span className="display rounded border border-win/50 bg-win/10 px-1.5 py-0.5 text-[10px] tracking-[0.1em] text-win">
+                        <span className="display rounded border border-win/50 bg-win/10 px-1.5 py-0.5 text-xs tracking-[0.1em] text-win">
                           Í gangi
                         </span>
                       ) : null}

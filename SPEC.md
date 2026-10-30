@@ -83,19 +83,16 @@ Available per-season and all-time.
 
 ## Design
 
-Based on the Stitch "Pro Arena Dynamic" design, toned down.
+"The court": the hall is the interface. A light hall-floor ground for reading
+under bright sports-hall lighting, court-mat green for the court and every win,
+white line tape as the rules on green, shuttle-tube yellow for the one thing to
+press and for runs, an ink tab bar. Archivo throughout, extra-condensed caps for
+scores and labels. The score pad is a top-down doubles court: players stand in
+service boxes and the two scores face each other across the net.
 
-**Keep:** dark navy base, Barlow Condensed for scores and headings, Rubik for
-body, green-for-winner / cyan-for-challenger color logic, neon glows and auras
-on cards, large touch targets, bottom nav (Kvöldið · Leikir · Tölfræði ·
-Leikmenn).
-
-**Dropped:** gradient-filled buttons, skewed/sheared chips, volt-yellow as a
-competing third accent, italics on every heading (scores and streak badges
-only), fake carbon-fiber texture, angular chamfers (gentle 8px radii instead),
-stock photos of pro players (initial-based avatars instead).
-
-Source design lives in `~/Downloads/stitch_badd_boys_badminton_tracker/`.
+Replaced the earlier dark navy and neon-glow look (based on the Stitch "Pro
+Arena Dynamic" design). Tokens and components are recorded in
+[DESIGN.md](DESIGN.md).
 
 ## Scope
 

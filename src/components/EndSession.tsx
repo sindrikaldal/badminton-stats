@@ -29,7 +29,7 @@ export function EndSession({
             <button
               type="submit"
               disabled={pending}
-              className="display flex-1 rounded-lg bg-win py-3 text-sm text-canvas disabled:opacity-50"
+              className="display flex-1 rounded-lg bg-shuttle py-3 text-lg text-ink disabled:opacity-50"
             >
               {pending ? "Loka…" : "Ljúka kvöldinu"}
             </button>
@@ -42,7 +42,7 @@ export function EndSession({
             </button>
           </div>
           {state && !state.ok ? (
-            <p className="mt-2 text-sm text-flame">{state.error}</p>
+            <p className="mt-2 text-sm text-danger">{state.error}</p>
           ) : null}
         </div>
       ) : (
@@ -76,7 +76,7 @@ export function ReopenSession({ sessionId }: { sessionId: number }) {
         {pending ? "Opna…" : "Opna kvöldið aftur"}
       </button>
       {state && !state.ok ? (
-        <p className="mt-2 text-sm text-flame">{state.error}</p>
+        <p className="mt-2 text-sm text-danger">{state.error}</p>
       ) : null}
     </form>
   );
