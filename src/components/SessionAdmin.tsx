@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { removeSession, updateAttendees } from "@/app/actions";
+import { useActionState, useState } from "react";
+import { updateAttendees } from "@/app/actions";
 import { AddPlayerInline } from "./AddPlayerInline";
+import { DeleteSession } from "./EndSession";
 import { Avatar } from "./Avatar";
 import type { Player, PlayerId } from "@/lib/domain/types";
 
@@ -27,9 +27,6 @@ export function SessionAdmin({
   const [selected, setSelected] = useState<Set<PlayerId>>(
     () => new Set(attendees),
   );
-  const [confirming, setConfirming] = useState(false);
-  const [deleting, startDelete] = useTransition();
-  const router = useRouter();
 
   const toggle = (id: PlayerId) =>
     setSelected((prev) => {
@@ -37,15 +34,6 @@ export function SessionAdmin({
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
-    });
-
-  const destroy = () =>
-    startDelete(async () => {
-      const data = new FormData();
-      data.set("sessionId", String(sessionId));
-      await removeSession(null, data);
-      router.push("/leikir");
-      router.refresh();
     });
 
   if (!open) {
@@ -127,38 +115,11 @@ export function SessionAdmin({
         <AddPlayerInline />
       </div>
 
-      {/* Only offered while nothing would be lost -- a mis-dated evening. */}
-      {matchCount === 0 ? (
-        <div className="mt-4 border-t border-line pt-4">
-          {confirming ? (
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={destroy}
-                disabled={deleting}
-                className="display flex-1 rounded-lg bg-danger py-2.5 text-lg text-tape disabled:opacity-50"
-              >
-                {deleting ? "Eyði…" : "Já, eyða kvöldinu"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirming(false)}
-                className="display flex-1 rounded-lg border border-line py-2.5 text-sm text-ink-muted"
-              >
-                Hætta við
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setConfirming(true)}
-              className="display w-full rounded-lg border border-danger/40 py-2.5 text-lg text-danger"
-            >
-              Eyða þessu kvöldi
-            </button>
-          )}
-        </div>
-      ) : null}
+      <DeleteSession
+        sessionId={sessionId}
+        matchCount={matchCount}
+        className="mt-4 border-t border-line pt-4"
+      />
     </div>
   );
 }

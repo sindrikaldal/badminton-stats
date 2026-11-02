@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { Fragment } from "react";
-import { EndSession, ReopenSession } from "@/components/EndSession";
+import {
+  DeleteSession,
+  EndSession,
+  ReopenSession,
+} from "@/components/EndSession";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { MeProvider, WhoAmI } from "@/components/Me";
 import { EmptyState, SectionTitle, Shell } from "@/components/Shell";
@@ -236,6 +240,10 @@ export default async function TonightPage({
               </Fragment>
             ))}
             <ReopenSession sessionId={session.id} />
+            <DeleteSession
+              sessionId={session.id}
+              matchCount={session.matches.length}
+            />
           </>
         )}
 
