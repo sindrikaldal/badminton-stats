@@ -18,6 +18,7 @@ export function MatchList({
   highlight,
   showDate,
   dates,
+  fresh,
 }: {
   matches: Match[];
   players: Player[];
@@ -26,11 +27,13 @@ export function MatchList({
   highlight?: PlayerId;
   showDate?: boolean;
   dates?: Map<number, string>;
+  /** The game this phone just logged; it lands with a brief wash. */
+  fresh?: number | null;
 }) {
   const byId = new Map(players.map((p) => [p.id, p]));
   const honorMatchIds = new Set(honors.map((h) => h.matchId));
 
-  const nameOf = (ids: [PlayerId, PlayerId]) =>
+  const nameOf = (ids: readonly PlayerId[]) =>
     ids.map((id) => byId.get(id)?.shortName ?? "?").join(" & ");
 
   return (
@@ -46,7 +49,12 @@ export function MatchList({
         const iWon = highlight !== undefined && winners.includes(highlight);
 
         return (
-          <li key={match.id} className={isHonor ? "bg-[#fdf6d8]" : undefined}>
+          <li
+            key={match.id}
+            className={`${isHonor ? "bg-[#fdf6d8]" : ""} ${
+              match.id === fresh ? "animate-land" : ""
+            }`}
+          >
             <Link href={`/leikur/${match.id}`} className="block px-3 pt-2 pb-2.5">
               <div className="flex min-h-6 items-center justify-between gap-2">
                 <span className="text-xs font-medium text-ink-faint">

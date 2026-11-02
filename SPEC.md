@@ -25,7 +25,10 @@ Season  →  Session  →  Match
 - **Session** — one evening. Starts by picking tonight's attendees from the
   roster (guests can be added inline). Attendance is explicit, not derived from
   matches, so "showed up but played nothing" is representable.
-- **Match** — one game, two pairs, a final score.
+- **Match** — one game, two pairs (or one player a side in 1v1), a final score.
+- **1v1** — for nights too short-handed for 2v2. A separate competition: its
+  games never count towards any 2v2 table, pair, honor or award, and it has a
+  table of its own. No "Þrír í röð" in 1v1.
 
 ## Rules of play
 

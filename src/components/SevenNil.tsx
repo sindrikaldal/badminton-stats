@@ -65,21 +65,37 @@ export function SevenNil({
       className="fixed inset-0 z-50 overflow-y-auto bg-ink text-tape"
     >
       <div className="relative mx-auto flex min-h-full max-w-[420px] flex-col justify-center px-6 py-10">
-        <div className="animate-pop-in text-center">
-          <p className="display tnum text-[8rem] leading-[0.85] text-tape">
+        {/* The score comes down like the referee's stamp, then the verdict,
+            then a shake of the head at whoever is on nil. */}
+        <div className="text-center">
+          <p className="animate-stamp display tnum text-[8rem] leading-[0.85] text-tape">
             7–0
           </p>
-          <h1 className="display mt-4 text-[2.5rem] leading-none text-shuttle">
-            Stöðvaðir á núlli
+          <h1
+            className="animate-rise display mt-4 text-[2.5rem] leading-none text-shuttle"
+            style={{ animationDelay: "0.3s" }}
+          >
+            {losers.length === 1 ? "Stöðvaður á núlli" : "Stöðvaðir á núlli"}
           </h1>
-          <p className="mt-2 text-sm font-medium text-[#c9d1cb]">
+          <p
+            className="animate-rise mt-2 text-sm font-medium text-[#c9d1cb]"
+            style={{ animationDelay: "0.36s" }}
+          >
             Leikurinn stöðvaður
           </p>
         </div>
 
-        <div className="animate-rise mt-7 rounded-lg bg-[#232e27] p-4">
+        <div
+          className="animate-rise mt-7 rounded-lg bg-[#232e27] p-4"
+          style={{ animationDelay: "0.42s" }}
+        >
           <p className="eyebrow text-center text-[#c9d1cb]">Á núlli</p>
-          <div className="mt-3 grid grid-cols-2 divide-x divide-[#3a463e]">
+          <div
+            className={`animate-shake mt-3 grid divide-x divide-[#3a463e] ${
+              losers.length === 1 ? "grid-cols-1" : "grid-cols-2"
+            }`}
+            style={{ animationDelay: "0.75s" }}
+          >
             {losers.map((player) => (
               <div
                 key={player.id}
@@ -101,7 +117,10 @@ export function SevenNil({
           </div>
         </div>
 
-        <p className="animate-rise mt-4 text-center text-sm text-[#c9d1cb]">
+        <p
+          className="animate-rise mt-4 text-center text-sm text-[#c9d1cb]"
+          style={{ animationDelay: "0.5s" }}
+        >
           Ekki eitt stig. Þetta fer í bækurnar.
         </p>
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { pairStreaksInSession, personalStreaksInSession } from "./streaks";
-import { type Match, pairKey } from "./types";
+import { type Match, type Team, pairKey } from "./types";
 
 const KARI = 1;
 const ARNAR = 2;
@@ -14,8 +14,8 @@ let seq = 0;
 
 /** A match written from the winners' point of view: `won(teamA, teamB, 11, 7)`. */
 function won(
-  winners: [number, number],
-  losers: [number, number],
+  winners: Team,
+  losers: Team,
   scoreW = 11,
   scoreL = 7,
 ): Match {
@@ -136,5 +136,23 @@ describe("personal streaks", () => {
     expect(best.get(KARI)).toBe(2);
     expect(current.get(KARI)).toBe(0);
     expect(current.get(BIRKIR)).toBe(1);
+  });
+});
+
+describe("1v1 games", () => {
+  it("neither extend nor break a pair's run, and earn no honor", () => {
+    const matches = [
+      won([KARI, ARNAR], [BIRKIR, GISLI]),
+      won([BIRKIR], [KARI]),
+      won([KARI, ARNAR], [BIRKIR, GISLI]),
+      won([GISLI], [BIRKIR]),
+      won([GISLI], [KARI]),
+      won([GISLI], [ARNAR]),
+      won([KARI, ARNAR], [BIRKIR, GISLI]),
+    ];
+    const { honors } = pairStreaksInSession(matches);
+    expect(honors).toHaveLength(1);
+    expect(honors[0].pair).toBe(pairKey(KARI, ARNAR));
+    expect(honors[0].matchId).toBe(matches[6].id);
   });
 });

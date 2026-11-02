@@ -1,14 +1,15 @@
 import { sql } from "./db";
-import type { Match, Player, PlayerId, Season, Session } from "./domain/types";
+import type { Match, Player, PlayerId, Season, Session, Team } from "./domain/types";
 
 type MatchRow = {
   id: number;
   sessionId: number;
   seq: number;
   a1: number;
-  a2: number;
+  /** Null in a 1v1 game, along with b2. */
+  a2: number | null;
   b1: number;
-  b2: number;
+  b2: number | null;
   scoreA: number;
   scoreB: number;
 };
@@ -26,8 +27,8 @@ function toMatch(row: MatchRow): Match {
     id: row.id,
     sessionId: row.sessionId,
     seq: row.seq,
-    teamA: [row.a1, row.a2],
-    teamB: [row.b1, row.b2],
+    teamA: row.a2 === null ? [row.a1] : [row.a1, row.a2],
+    teamB: row.b2 === null ? [row.b1] : [row.b1, row.b2],
     scoreA: row.scoreA,
     scoreB: row.scoreB,
   };
@@ -350,8 +351,8 @@ export async function setAttendees(
 export async function addMatch(input: {
   sessionId: number;
   afterMatchId: number;
-  teamA: [PlayerId, PlayerId];
-  teamB: [PlayerId, PlayerId];
+  teamA: Team;
+  teamB: Team;
   scoreA: number;
   scoreB: number;
 }): Promise<Match | null> {
@@ -365,7 +366,7 @@ export async function addMatch(input: {
       SELECT
         ${input.sessionId},
         COALESCE((SELECT seq FROM latest), 0) + 1,
-        ${input.teamA[0]}, ${input.teamA[1]}, ${input.teamB[0]}, ${input.teamB[1]},
+        ${input.teamA[0]}, ${input.teamA[1] ?? null}, ${input.teamB[0]}, ${input.teamB[1] ?? null},
         ${input.scoreA}, ${input.scoreB}
       WHERE COALESCE((SELECT id FROM latest), 0) = ${input.afterMatchId}
       RETURNING id, session_id, seq, a1, a2, b1, b2, score_a, score_b
@@ -390,16 +391,16 @@ export async function getMatch(id: number): Promise<Match | null> {
 export async function updateMatch(
   id: number,
   input: {
-    teamA: [PlayerId, PlayerId];
-    teamB: [PlayerId, PlayerId];
+    teamA: Team;
+    teamB: Team;
     scoreA: number;
     scoreB: number;
   },
 ): Promise<Match> {
   const [row] = await sql<MatchRow[]>`
     UPDATE matches SET
-      a1 = ${input.teamA[0]}, a2 = ${input.teamA[1]},
-      b1 = ${input.teamB[0]}, b2 = ${input.teamB[1]},
+      a1 = ${input.teamA[0]}, a2 = ${input.teamA[1] ?? null},
+      b1 = ${input.teamB[0]}, b2 = ${input.teamB[1] ?? null},
       score_a = ${input.scoreA}, score_b = ${input.scoreB}
     WHERE id = ${id}
     RETURNING id, session_id, seq, a1, a2, b1, b2, score_a, score_b

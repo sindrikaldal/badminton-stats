@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { nemesisFor, rankedLeaderboard, seasonStats } from "./stats";
-import type { Match, PlayerId, Session } from "./types";
+import { nightStats } from "./night";
+import { type Match, type PlayerId, type Session, type Team, gamesOfKind } from "./types";
 
 const KARI = 1;
 const ARNAR = 2;
@@ -14,8 +15,8 @@ const ROSTER = [KARI, ARNAR, BIRKIR, GISLI];
 let seq = 0;
 
 function won(
-  winners: [number, number],
-  losers: [number, number],
+  winners: Team,
+  losers: Team,
   scoreW = 11,
   scoreL = 7,
 ): Match {
@@ -438,5 +439,41 @@ describe("leaderboard order", () => {
     const rows = rankedLeaderboard(stats.players, "wins");
     // Arnar 1 of 1 beats Davíð 1 of 4.
     expect(order(rows).indexOf(ARNAR)).toBeLessThan(order(rows).indexOf(DAVID));
+  });
+});
+
+describe("1v1 games", () => {
+  // Kári wins 2v2 once and loses it once, and sweeps three 1v1 games.
+  const night = () =>
+    session(1, "2026-11-02", [
+      won([KARI, ARNAR], [BIRKIR, GISLI]),
+      won([BIRKIR, GISLI], [KARI, ARNAR]),
+      won([KARI], [BIRKIR]),
+      won([KARI], [GISLI]),
+      won([KARI], [BIRKIR], 7, 0),
+    ]);
+
+  it("never count towards the 2v2 table", () => {
+    const kari = seasonStats([night()], ROSTER).players.find(
+      (p) => p.playerId === KARI,
+    )!;
+    expect([kari.played, kari.wins]).toEqual([2, 1]);
+    expect(kari.sevenNil.given).toBe(0);
+  });
+
+  it("have a table of their own, with no 2v2 in it", () => {
+    const stats = seasonStats([night()], ROSTER, undefined, true);
+    const kari = stats.players.find((p) => p.playerId === KARI)!;
+    expect(stats.totalMatches).toBe(3);
+    expect([kari.played, kari.wins, kari.bestStreak]).toEqual([3, 3, 3]);
+    expect(kari.sevenNil.given).toBe(1);
+    expect(stats.pairs).toEqual([]);
+  });
+
+  it("give the night a separate 1v1 table with no pair award", () => {
+    const tonight = nightStats(gamesOfKind(night(), true));
+    expect(tonight.matches).toBe(3);
+    expect(tonight.playerOfTheNight).toEqual([KARI]);
+    expect(tonight.pairOfTheNight).toBeNull();
   });
 });

@@ -16,13 +16,16 @@ export type Season = {
   endedOn: string | null;
 };
 
-/** One game: two pairs, a final score, and its position in the evening. */
+/** A pair in 2v2, a lone player in 1v1. Both sides are always the same size. */
+export type Team = [PlayerId] | [PlayerId, PlayerId];
+
+/** One game: two sides, a final score, and its position in the evening. */
 export type Match = {
   id: number;
   sessionId: number;
   seq: number;
-  teamA: [PlayerId, PlayerId];
-  teamB: [PlayerId, PlayerId];
+  teamA: Team;
+  teamB: Team;
   scoreA: number;
   scoreB: number;
 };
@@ -53,11 +56,11 @@ export function pairMembers(key: PairKey): [PlayerId, PlayerId] {
   return [a, b];
 }
 
-export function winnersOf(match: Match): [PlayerId, PlayerId] {
+export function winnersOf(match: Match): Team {
   return match.scoreA > match.scoreB ? match.teamA : match.teamB;
 }
 
-export function losersOf(match: Match): [PlayerId, PlayerId] {
+export function losersOf(match: Match): Team {
   return match.scoreA > match.scoreB ? match.teamB : match.teamA;
 }
 
@@ -85,20 +88,18 @@ export function didWin(match: Match, player: PlayerId): boolean {
   return winnersOf(match).includes(player);
 }
 
-/** The player's partner in this match, or null if they did not play. */
+/** The player's partner in this match, or null if they did not play or it was 1v1. */
 export function partnerOf(match: Match, player: PlayerId): PlayerId | null {
-  if (match.teamA[0] === player) return match.teamA[1];
-  if (match.teamA[1] === player) return match.teamA[0];
-  if (match.teamB[0] === player) return match.teamB[1];
-  if (match.teamB[1] === player) return match.teamB[0];
-  return null;
+  const side = match.teamA.includes(player)
+    ? match.teamA
+    : match.teamB.includes(player)
+      ? match.teamB
+      : [];
+  return side.find((p) => p !== player) ?? null;
 }
 
-/** The two players on the other side, or null if they did not play. */
-export function opponentsOf(
-  match: Match,
-  player: PlayerId,
-): [PlayerId, PlayerId] | null {
+/** Whoever was on the other side, or null if they did not play. */
+export function opponentsOf(match: Match, player: PlayerId): Team | null {
   if (match.teamA.includes(player)) return match.teamB;
   if (match.teamB.includes(player)) return match.teamA;
   return null;
@@ -109,6 +110,21 @@ export function scoreFor(match: Match, player: PlayerId): [number, number] | nul
   if (match.teamA.includes(player)) return [match.scoreA, match.scoreB];
   if (match.teamB.includes(player)) return [match.scoreB, match.scoreA];
   return null;
+}
+
+export function isSingles(match: Match): boolean {
+  return match.teamA.length === 1;
+}
+
+/**
+ * The evening with only its 1v1 games, or only its 2v2 ones. The two are
+ * separate competitions: no tally, table or award ever mixes them.
+ */
+export function gamesOfKind(session: Session, singles: boolean): Session {
+  return {
+    ...session,
+    matches: session.matches.filter((m) => isSingles(m) === singles),
+  };
 }
 
 /**

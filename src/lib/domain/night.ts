@@ -233,10 +233,10 @@ function pairOfTheNight(matches: Match[]): NightPair | null {
     tally.set(key, entry);
   };
 
-  for (const match of matches) {
-    const aWon = match.scoreA > match.scoreB;
-    record(match.teamA[0], match.teamA[1], aWon);
-    record(match.teamB[0], match.teamB[1], !aWon);
+  for (const { teamA, teamB, scoreA, scoreB } of matches) {
+    if (teamA.length === 1 || teamB.length === 1) continue;
+    record(teamA[0], teamA[1], scoreA > scoreB);
+    record(teamB[0], teamB[1], scoreB > scoreA);
   }
 
   const ranked = [...tally.entries()]

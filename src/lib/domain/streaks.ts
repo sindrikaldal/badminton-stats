@@ -29,7 +29,9 @@ export type PairStreak = {
 
 /**
  * Streaks live inside a single evening -- they never carry across weeks.
- * `matches` must be the whole session in playing order.
+ * `matches` must be the whole session in playing order. 1v1 games are skipped:
+ * the honor belongs to a pair, and a 1v1 game in between neither extends nor
+ * breaks a pair's run.
  */
 export function pairStreaksInSession(matches: Match[]): {
   honors: Honor[];
@@ -46,6 +48,7 @@ export function pairStreaksInSession(matches: Match[]): {
 
   for (const match of matches) {
     const winners = winnersOf(match);
+    if (winners.length === 1) continue;
     const key = pairKey(winners[0], winners[1]);
 
     if (key === holding) {

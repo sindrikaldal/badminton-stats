@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Fragment } from "react";
 import { EndSession, ReopenSession } from "@/components/EndSession";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { MeProvider, WhoAmI } from "@/components/Me";
@@ -17,8 +18,14 @@ import {
   honorFromMatch,
   pairStreaksInSession,
   pairThatMustSplit,
+  personalStreaksInSession,
 } from "@/lib/domain/streaks";
-import { isSevenNil, winnersOf } from "@/lib/domain/types";
+import {
+  gamesOfKind,
+  isSevenNil,
+  isSingles,
+  winnersOf,
+} from "@/lib/domain/types";
 import * as repo from "@/lib/repo";
 import { Arrow } from "@/components/Arrow";
 
@@ -118,7 +125,21 @@ export default async function TonightPage({
   }
 
   const isOpen = session.endedAt === null;
-  const tonight = nightStats(session);
+  // 2v2 and 1v1 each get their own table. Before the first game, the night
+  // shows whichever the headcount allows.
+  const played = [false, true].filter((singles) =>
+    session.matches.some((m) => isSingles(m) === singles),
+  );
+  const kinds = played.length > 0 ? played : [session.attendees.length < 4];
+  const tables = kinds.map((singles) => {
+    const stats = nightStats(gamesOfKind(session, singles));
+    // Beside a 2v2 table, a row for everyone who sat 1v1 out is noise.
+    const lines =
+      singles && played.length > 1
+        ? stats.lines.filter((l) => l.played > 0)
+        : stats.lines;
+    return { singles, stats: { ...stats, lines } };
+  });
   const { current, honors } = pairStreaksInSession(session.matches);
   const justPlayed = params.nyr ? Number(params.nyr) : null;
   const freshHonor = justPlayed
@@ -137,8 +158,15 @@ export default async function TonightPage({
   // Whoever holds the court is offered first on the next-match form -- unless
   // they have just earned an honor, in which case they owe the rule a split.
   const lastMatch = session.matches.at(-1);
-  const holdingPair = lastMatch ? winnersOf(lastMatch) : null;
+  const holding = lastMatch ? winnersOf(lastMatch) : null;
   const mustSplit = pairThatMustSplit(session.matches);
+  // A pair's run is the pair streak; a lone 1v1 winner's is their own 1v1 run.
+  const holdingRun =
+    lastMatch && holding && isSingles(lastMatch)
+      ? (personalStreaksInSession(gamesOfKind(session, true).matches).current.get(
+          holding[0],
+        ) ?? 0)
+      : (current?.length ?? 0);
 
   return (
     <Shell
@@ -161,22 +189,29 @@ export default async function TonightPage({
               sessionId={session.id}
               attendees={attendees}
               matches={session.matches}
-              holdingPair={holdingPair}
+              holding={holding}
               mustSplit={mustSplit}
-              currentStreak={current}
+              holdingRun={holdingRun}
               honorsTonight={honors.length}
               celebrate={freshHonor}
               shame={freshShame}
               justLogged={justPlayed}
             />
 
-            <SectionTitle>Staðan í kvöld</SectionTitle>
-            <NightStandings
-              lines={tonight.lines}
-              players={players}
-              leaders={tonight.playerOfTheNight}
-              qualifyThreshold={tonight.qualifyThreshold}
-            />
+            {tables.map(({ singles, stats }) => (
+              <Fragment key={String(singles)}>
+                <SectionTitle>
+                  {singles ? "Staðan í kvöld · 1 á 1" : "Staðan í kvöld"}
+                </SectionTitle>
+                <NightStandings
+                  listId={`kvold-${session.id}-${singles ? "1a1" : "2a2"}`}
+                  lines={stats.lines}
+                  players={players}
+                  leaders={stats.playerOfTheNight}
+                  qualifyThreshold={stats.qualifyThreshold}
+                />
+              </Fragment>
+            ))}
 
             <SessionAdmin
               sessionId={session.id}
@@ -192,8 +227,14 @@ export default async function TonightPage({
           </>
         ) : (
           <>
-            <SectionTitle>Kvöldið í tölum</SectionTitle>
-            <NightSummary stats={tonight} players={players} />
+            {tables.map(({ singles, stats }) => (
+              <Fragment key={String(singles)}>
+                <SectionTitle>
+                  {singles ? "Kvöldið í tölum · 1 á 1" : "Kvöldið í tölum"}
+                </SectionTitle>
+                <NightSummary stats={stats} players={players} />
+              </Fragment>
+            ))}
             <ReopenSession sessionId={session.id} />
           </>
         )}
@@ -210,6 +251,7 @@ export default async function TonightPage({
             matches={[...session.matches].reverse()}
             players={players}
             honors={honors}
+            fresh={justPlayed}
           />
         )}
       </MeProvider>

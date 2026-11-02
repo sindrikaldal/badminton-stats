@@ -278,11 +278,26 @@ Initials in compressed caps on a 2px-rimmed circle, in one of three court kits c
 ### Court (signature)
 The score pad drawn as a top-down doubles court, full bleed in court green inside a 3px white tape boundary. Each half stacks back alley (side label tag, "Setja 11" and "7–0" outlined shortcuts), two service boxes holding player names, and the front zone with a minus stepper (outlined), the score, and a plus stepper (solid white with green glyph). Side B mirrors side A across the net band, which carries the round swap button. The leading score turns shuttle yellow. Shared by logging and editing a game.
 
+In 1v1 the court re-lines itself as a singles court: two 3px tape tramlines run the full length 8px inside the boundary, each half has a single service box, and the back alley and front zone step inside the tramlines. The net hangs over the tramlines.
+
+### Kind Switch
+2 á 2 or 1 á 1, one control wherever the two competitions are chosen: next to "Leikur N" on the score pad, and in the corner of the Tölfræði summary card once anyone has played 1v1. A raised-floor track with 4px corners, two 40px segments in compressed caps, and an ink thumb under the active one with tape text on it.
+
 ### Run Strip
 A 4px-corner strip above the court naming the pair holding the court: a square count tile plus names and a caption. White at rest, yellow tile once on a run, the whole strip yellow with an ink tile when the pair must split.
 
 ### Full-Screen Moments
-Run of three: the screen becomes shuttle yellow with white cards, ink display type and an ink dismiss button. 7–0: the screen becomes ink with an 8rem white score, yellow headline and a yellow dismiss button. Both enter with a short pop-in and rise (0.3–0.4s, ease-out expo) and honor reduced motion.
+Run of three: the screen becomes shuttle yellow with white cards, ink display type and an ink dismiss button; the three winning scores stamp down one after another. 7–0: the screen becomes ink with an 8rem white score that comes down like a stamp, a yellow headline and a yellow dismiss button; the card naming who was on nil shakes once. The dismiss button is there from the first frame.
+
+## Motion
+
+Motion explains the court and lands the moments; it never makes anyone wait. Arrivals use one curve, ease-out expo (`--ease-arrive`, `cubic-bezier(0.16, 1, 0.3, 1)`), and only stamps overshoot.
+
+- **The court (focal):** scores roll like scoreboard digits (up for higher, down for lower, 180ms); a player stepping into a service box walks on from the net; the swap arrows spin a half-turn; steppers, shortcuts and chips press in. Switching to 1v1 draws the tramlines in from the net (300ms).
+- **Continuity:** the tab bar's yellow bar slides from the tab you left; a tab's page settles in (240ms) on a tab switch only, never after logging; tonight's standings glide to their new order; the game just logged lands in the list with a fading green wash; the run tile bumps when the run changes.
+- **Moments:** stamps and the shake above, and partner and opponent bars filling from the left on a player page, cascading 40ms apart and capped.
+- **Rule:** nothing animates on a plain page load or a background refresh. Logging a game remounts the page, so anything that must survive it (bar position, row order) is remembered at module scope.
+- **Reduced motion:** every change still happens, instantly; delays drop too, so nothing waits invisible.
 
 ## Do's and Don'ts
 

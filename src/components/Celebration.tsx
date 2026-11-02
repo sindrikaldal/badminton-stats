@@ -102,10 +102,12 @@ export function Celebration({
           <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
             <span className="eyebrow">Sigrarnir</span>
             <div className="flex gap-1.5">
-              {run.map((match) => (
+              {/* Three in a row, stamped down one after another. */}
+              {run.map((match, i) => (
                 <span
                   key={match.id}
-                  className="display tnum rounded bg-win px-2 py-1 text-lg text-tape"
+                  className="animate-stamp display tnum rounded bg-win px-2 py-1 text-lg text-tape"
+                  style={{ animationDelay: `${0.45 + i * 0.18}s` }}
                 >
                   {winningScore(match)}–{losingScore(match)}
                 </span>

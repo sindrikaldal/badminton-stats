@@ -1,4 +1,5 @@
 import { Avatar } from "./Avatar";
+import { FlipList } from "./FlipList";
 import type { NightLine } from "@/lib/domain/night";
 import type { Player, PlayerId } from "@/lib/domain/types";
 
@@ -11,11 +12,14 @@ import type { Player, PlayerId } from "@/lib/domain/types";
  * is explicit in this app, and "mætti, spilaði ekkert" is a real state.
  */
 export function NightStandings({
+  listId,
   lines,
   players,
   leaders,
   qualifyThreshold,
 }: {
+  /** Names this table across page mounts, so a re-sort can glide. */
+  listId: string;
   lines: NightLine[];
   players: Player[];
   leaders: PlayerId[];
@@ -27,7 +31,7 @@ export function NightStandings({
 
   return (
     <>
-      <ul className="card divide-y divide-line overflow-hidden">
+      <FlipList id={listId} className="card divide-y divide-line overflow-hidden">
         {lines.map((line) => {
           const player = byId.get(line.playerId);
           if (!player) return null;
@@ -38,7 +42,8 @@ export function NightStandings({
           return (
             <li
               key={line.playerId}
-              className={`flex items-center gap-3 px-3 py-2.5 ${
+              data-key={line.playerId}
+              className={`flex items-center gap-3 px-3 py-2.5 transition-colors duration-500 ${
                 leading.has(line.playerId) ? "bg-win-dim" : ""
               }`}
             >
@@ -74,7 +79,7 @@ export function NightStandings({
             </li>
           );
         })}
-      </ul>
+      </FlipList>
 
       {anyBelowBar ? (
         <p className="mt-2 text-xs text-ink-faint">

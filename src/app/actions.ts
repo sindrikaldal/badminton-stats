@@ -137,8 +137,8 @@ export async function startSession(
   if (!/^\d{4}-\d{2}-\d{2}$/.test(playedOn)) {
     return { ok: false, error: "Ógild dagsetning." };
   }
-  if (attendees.length < 4) {
-    return { ok: false, error: "Það þarf a.m.k. fjóra til að spila." };
+  if (attendees.length < 2) {
+    return { ok: false, error: "Það þarf a.m.k. tvo til að spila." };
   }
 
   const season = await repo.getActiveSeason();
@@ -227,7 +227,8 @@ export async function removeSession(
 
 /* ------------------------------------------------------------ matches ---- */
 
-const teamSchema = z.tuple([z.number().int().positive(), z.number().int().positive()]);
+const playerId = z.number().int().positive();
+const teamSchema = z.union([z.tuple([playerId, playerId]), z.tuple([playerId])]);
 
 const matchSchema = z
   .object({
@@ -236,18 +237,25 @@ const matchSchema = z
     scoreA: z.number().int().min(0).max(99),
     scoreB: z.number().int().min(0).max(99),
   })
-  .refine((m) => new Set([...m.teamA, ...m.teamB]).size === 4, {
-    message: "Sami leikmaður má ekki vera tvisvar í leiknum.",
+  .refine((m) => m.teamA.length === m.teamB.length, {
+    message: "Leikur er annað hvort 2 á 2 eða 1 á 1.",
   })
+  .refine(
+    (m) => new Set([...m.teamA, ...m.teamB]).size === m.teamA.length * 2,
+    { message: "Sami leikmaður má ekki vera tvisvar í leiknum." },
+  )
   .superRefine((m, ctx) => {
     const problem = scoreProblem(m.scoreA, m.scoreB);
     if (problem) ctx.addIssue({ code: "custom", message: problem });
   });
 
 function readMatch(formData: FormData) {
+  // A 1v1 game posts a2 and b2 empty.
+  const side = (one: string, two: string) =>
+    [formData.get(one), formData.get(two)].filter(Boolean).map(Number);
   return matchSchema.safeParse({
-    teamA: [Number(formData.get("a1")), Number(formData.get("a2"))],
-    teamB: [Number(formData.get("b1")), Number(formData.get("b2"))],
+    teamA: side("a1", "a2"),
+    teamB: side("b1", "b2"),
     scoreA: Number(formData.get("scoreA")),
     scoreB: Number(formData.get("scoreB")),
   });

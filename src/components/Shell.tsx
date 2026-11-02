@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BottomNav } from "./BottomNav";
 import { CourtMark } from "./CourtMark";
+import { PageIn } from "./PageIn";
 
 export function Shell({
   children,
@@ -40,9 +41,9 @@ export function Shell({
       </header>
 
       <main className="flex-1 overflow-y-auto overscroll-y-contain">
-        <div className="mx-auto w-full max-w-[480px] px-4 pt-4 pb-8">
+        <PageIn className="mx-auto w-full max-w-[480px] px-4 pt-4 pb-8">
           {children}
-        </div>
+        </PageIn>
       </main>
 
       <BottomNav />
