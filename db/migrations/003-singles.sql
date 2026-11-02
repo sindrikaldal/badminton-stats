@@ -4,11 +4,14 @@
 -- installs get it from db/schema.sql and should skip this file.
 --
 -- Touches no rows. Every existing match is 2v2 and passes the new checks.
+-- Safe to run again: each constraint is dropped before it is added.
 
 ALTER TABLE matches ALTER COLUMN a2 DROP NOT NULL;
 ALTER TABLE matches ALTER COLUMN b2 DROP NOT NULL;
 
 ALTER TABLE matches DROP CONSTRAINT IF EXISTS matches_four_distinct_players;
+ALTER TABLE matches DROP CONSTRAINT IF EXISTS matches_sides_even;
+ALTER TABLE matches DROP CONSTRAINT IF EXISTS matches_distinct_players;
 
 -- 2v2 or 1v1, never two against one.
 ALTER TABLE matches ADD CONSTRAINT matches_sides_even
