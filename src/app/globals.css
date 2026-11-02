@@ -58,6 +58,23 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /*
+   * iOS Safari gives a date field a native minimum width wider than a phone
+   * column, so width: 100% alone lets it run out of its card. Dropping the
+   * native appearance lets it shrink; tapping still opens the date wheel.
+   */
+  input[type="date"] {
+    display: block;
+    min-width: 0;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Without the native look iOS centres the date; keep it with the label. */
+  input[type="date"]::-webkit-date-and-time-value {
+    text-align: left;
+  }
+
   ::selection {
     background: var(--color-shuttle);
     color: var(--color-ink);
