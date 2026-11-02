@@ -123,6 +123,15 @@
   border-top: 4px solid var(--color-tape);
 }
 
+/*
+ * Motion. Arrivals decelerate (ease-out expo); nothing bounces except where
+ * the moment is a stamp. Every keyframe starts from where the element already
+ * sits, so a frame that never runs still leaves the page readable.
+ */
+@theme {
+  --ease-arrive: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 @keyframes pop-in {
   from {
     opacity: 0;
@@ -145,19 +154,180 @@
   }
 }
 
+/* Scoreboard digits: a higher number rolls up into place, a lower one down. */
+@keyframes tick-up {
+  from {
+    opacity: 0.2;
+    transform: translateY(32%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tick-down {
+  from {
+    opacity: 0.2;
+    transform: translateY(-32%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Players walk on from the net: up into side A's boxes, down into side B's. */
+@keyframes step-up {
+  from {
+    opacity: 0;
+    transform: translateY(9px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes step-down {
+  from {
+    opacity: 0;
+    transform: translateY(-9px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The run counter taking one more. */
+@keyframes bump {
+  from {
+    transform: scale(1.3);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* A game just logged, landing at the top of the evening's list. */
+@keyframes land {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+    background-color: var(--color-win-dim);
+  }
+  18% {
+    opacity: 1;
+    transform: none;
+    background-color: var(--color-win-dim);
+  }
+}
+
+/* A rubber stamp: comes down from above the page, hits, settles. */
+@keyframes stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.93);
+  }
+  78% {
+    transform: scale(1.03);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* Head shaken at whoever was stopped on nil. */
+@keyframes shake {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+/* A record bar filling from the left. */
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
 @utility animate-pop-in {
-  animation: pop-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: pop-in 0.4s var(--ease-arrive) both;
 }
 
 @utility animate-rise {
-  animation: rise 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: rise 0.3s var(--ease-arrive) both;
 }
 
+@utility animate-tick-up {
+  animation: tick-up 0.18s var(--ease-arrive) both;
+}
+
+@utility animate-tick-down {
+  animation: tick-down 0.18s var(--ease-arrive) both;
+}
+
+@utility animate-step-up {
+  animation: step-up 0.22s var(--ease-arrive) both;
+}
+
+@utility animate-step-down {
+  animation: step-down 0.22s var(--ease-arrive) both;
+}
+
+@utility animate-bump {
+  animation: bump 0.32s var(--ease-arrive);
+}
+
+@utility animate-land {
+  animation: land 1.8s var(--ease-arrive) both;
+}
+
+@utility animate-stamp {
+  animation: stamp 0.5s cubic-bezier(0.3, 0, 0.2, 1) both;
+}
+
+@utility animate-shake {
+  animation: shake 0.42s ease-out;
+}
+
+@utility animate-grow {
+  transform-origin: left;
+  animation: grow 0.6s var(--ease-arrive) both;
+}
+
+/*
+ * Less motion means instant changes, not missing ones: every state still
+ * lands, it just does not travel. Delays go too, so a staggered entrance
+ * cannot leave anything invisible for a beat.
+ */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
   }
 }

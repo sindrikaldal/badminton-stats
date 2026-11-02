@@ -9,6 +9,7 @@ import {
   compareThrashing,
   didPlay,
   didWin,
+  gamesOfKind,
   isSevenNil,
   losersOf,
   losingScore,
@@ -149,10 +150,12 @@ export function seasonStats(
    * turned up once. Defaults to the whole roster.
    */
   eligible: ReadonlySet<PlayerId> = new Set(roster),
+  /** The 1v1 table instead of the 2v2 one. Never both at once. */
+  singles = false,
 ): SeasonStats {
-  const sessions = [...unordered].sort(
-    (a, b) => a.playedOn.localeCompare(b.playedOn) || a.id - b.id,
-  );
+  const sessions = unordered
+    .map((s) => gamesOfKind(s, singles))
+    .sort((a, b) => a.playedOn.localeCompare(b.playedOn) || a.id - b.id);
   const matches = allMatches(sessions);
   const totalMatches = matches.length;
   const totalSessions = sessions.length;
@@ -379,10 +382,10 @@ function pairStats(
     tally.set(key, entry);
   };
 
-  for (const match of matches) {
-    const aWon = match.scoreA > match.scoreB;
-    record(match.teamA[0], match.teamA[1], aWon);
-    record(match.teamB[0], match.teamB[1], !aWon);
+  for (const { teamA, teamB, scoreA, scoreB } of matches) {
+    if (teamA.length === 1 || teamB.length === 1) continue;
+    record(teamA[0], teamA[1], scoreA > scoreB);
+    record(teamB[0], teamB[1], scoreB > scoreA);
   }
 
   return [...tally.entries()]

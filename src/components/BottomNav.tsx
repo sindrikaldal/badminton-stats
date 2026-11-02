@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLayoutEffect, useRef } from "react";
 
 const TABS = [
   { href: "/", label: "Kvöldið", icon: ShuttleIcon },
@@ -10,8 +11,33 @@ const TABS = [
   { href: "/leikmenn", label: "Leikmenn", icon: PeopleIcon },
 ];
 
+/**
+ * Where the yellow bar last stood. Every page draws its own shell, so the tab
+ * bar is a fresh component after each navigation; module scope is what
+ * survives, letting the bar slide over from the tab you came from.
+ */
+let barWasAt: number | null = null;
+
 export function BottomNav() {
   const pathname = usePathname();
+  const current = TABS.findIndex(({ href }) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href),
+  );
+  const bar = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    const from = barWasAt;
+    barWasAt = current;
+    if (from === null || from === current || current === -1 || !bar.current) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    bar.current.animate(
+      [
+        { transform: `translateX(${from * 100}%)` },
+        { transform: `translateX(${current * 100}%)` },
+      ],
+      { duration: 340, easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
+    );
+  }, [current]);
 
   return (
     <nav
@@ -20,19 +46,24 @@ export function BottomNav() {
       // needs the lower part of it kept clear.
       style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px) - 12px, 0px)" }}
     >
-      <ul className="mx-auto flex max-w-[480px]">
-        {TABS.map(({ href, label, icon: Icon }) => {
-          const active =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
+      <ul className="relative mx-auto flex max-w-[480px]">
+        {current !== -1 ? (
+          <span
+            ref={bar}
+            aria-hidden
+            className="absolute top-0 left-0 h-[3px] w-1/4 bg-shuttle"
+            style={{ transform: `translateX(${current * 100}%)` }}
+          />
+        ) : null}
+        {TABS.map(({ href, label, icon: Icon }, index) => {
+          const active = index === current;
           return (
             <li key={href} className="flex-1">
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`flex h-14 flex-col items-center justify-center gap-1.5 border-t-[3px] transition-colors ${
-                  active
-                    ? "border-shuttle text-shuttle"
-                    : "border-transparent text-[#9aa59e] active:text-tape"
+                className={`flex h-14 flex-col items-center justify-center gap-1.5 border-t-[3px] border-transparent transition-colors ${
+                  active ? "text-shuttle" : "text-[#9aa59e] active:text-tape"
                 }`}
               >
                 <Icon active={active} />

@@ -59,10 +59,11 @@ CREATE TABLE IF NOT EXISTS matches (
   session_id  integer NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
   -- Order within the evening. Streaks are read off this, so it must be stable.
   seq         integer NOT NULL,
+  -- a2 and b2 are NULL in a 1v1 game: one player a side.
   a1          integer NOT NULL REFERENCES players(id),
-  a2          integer NOT NULL REFERENCES players(id),
+  a2          integer REFERENCES players(id),
   b1          integer NOT NULL REFERENCES players(id),
-  b2          integer NOT NULL REFERENCES players(id),
+  b2          integer REFERENCES players(id),
   score_a     integer NOT NULL,
   score_b     integer NOT NULL,
   created_at  timestamptz NOT NULL DEFAULT now(),
@@ -81,8 +82,12 @@ CREATE TABLE IF NOT EXISTS matches (
       AND GREATEST(score_a, score_b) - LEAST(score_a, score_b) >= 2
     )
   ),
-  CONSTRAINT matches_four_distinct_players CHECK (
-    a1 <> a2 AND b1 <> b2 AND a1 <> b1 AND a1 <> b2 AND a2 <> b1 AND a2 <> b2
+  -- 2v2 or 1v1, never two against one.
+  CONSTRAINT matches_sides_even CHECK ((a2 IS NULL) = (b2 IS NULL)),
+  CONSTRAINT matches_distinct_players CHECK (
+    CASE WHEN a2 IS NULL THEN a1 <> b1
+    ELSE a1 <> a2 AND b1 <> b2 AND a1 <> b1 AND a1 <> b2 AND a2 <> b1 AND a2 <> b2
+    END
   )
 );
 

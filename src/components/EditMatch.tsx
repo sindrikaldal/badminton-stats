@@ -4,7 +4,13 @@ import { useActionState, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { editMatch, removeMatch } from "@/app/actions";
 import { Court } from "./Court";
-import { type Match, type Player, type PlayerId, scoreProblem } from "@/lib/domain/types";
+import {
+  type Match,
+  type Player,
+  type PlayerId,
+  isSingles,
+  scoreProblem,
+} from "@/lib/domain/types";
 
 type Slots = [PlayerId | null, PlayerId | null, PlayerId | null, PlayerId | null];
 
@@ -18,11 +24,13 @@ export function EditMatch({
   sessionId: number;
 }) {
   const [state, action, pending] = useActionState(editMatch, null);
+  // A correction keeps the game's kind; a 1v1 logged as 2v2 is deleted and re-entered.
+  const singles = isSingles(match);
   const [slots, setSlots] = useState<Slots>([
     match.teamA[0],
-    match.teamA[1],
+    match.teamA[1] ?? null,
     match.teamB[0],
-    match.teamB[1],
+    match.teamB[1] ?? null,
   ]);
   const [scoreA, setScoreA] = useState(match.scoreA);
   const [scoreB, setScoreB] = useState(match.scoreB);
@@ -31,7 +39,9 @@ export function EditMatch({
   const router = useRouter();
 
   const byId = new Map(candidates.map((p) => [p.id, p]));
-  const complete = slots.every((s) => s !== null);
+  const complete = singles
+    ? slots[0] !== null && slots[2] !== null
+    : slots.every((s) => s !== null);
   const problem = scoreProblem(scoreA, scoreB);
 
   const place = (playerId: PlayerId) =>
@@ -42,8 +52,8 @@ export function EditMatch({
         next[at] = null;
         return next;
       }
-      const free = next.indexOf(null);
-      if (free !== -1) next[free] = playerId;
+      const free = (singles ? [0, 2] : [0, 1, 2, 3]).find((i) => next[i] === null);
+      if (free !== undefined) next[free] = playerId;
       return next;
     });
 
@@ -60,7 +70,11 @@ export function EditMatch({
     <>
       <form action={action}>
         <p className="text-right text-xs font-medium text-ink-faint">
-          {complete ? "Skiptu um leikmenn með því að ýta" : "Veldu fjóra"}
+          {complete
+            ? "Skiptu um leikmenn með því að ýta"
+            : singles
+              ? "Veldu tvo"
+              : "Veldu fjóra"}
         </p>
         <div className="mt-2 flex flex-wrap gap-1.5">
           {candidates.map((player) => {
@@ -73,7 +87,7 @@ export function EditMatch({
                 type="button"
                 onClick={() => place(player.id)}
                 aria-pressed={placed}
-                className={`display flex h-9 items-center rounded-full border-2 px-3 text-base transition-colors ${
+                className={`display flex h-9 items-center rounded-full border-2 px-3 text-base transition duration-150 active:scale-95 ${
                   placed
                     ? side === "a"
                       ? "border-win bg-win text-tape"
@@ -89,6 +103,7 @@ export function EditMatch({
 
         <Court
           slots={slots}
+          singles={singles}
           byId={byId}
           onClear={(index) =>
             setSlots((prev) => {

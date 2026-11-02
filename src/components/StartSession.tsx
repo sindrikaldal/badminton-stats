@@ -106,7 +106,8 @@ export function StartSession({
         <p className="text-sm text-danger">{state.error}</p>
       ) : null}
 
-      <Submit disabled={selected.size < 4} />
+      {/* Two is enough for 1v1. */}
+      <Submit disabled={selected.size < 2} />
     </form>
   );
 }
@@ -120,7 +121,7 @@ function Submit({ disabled }: { disabled: boolean }) {
       className="display w-full rounded-lg bg-shuttle text-[1.5rem] text-ink disabled:bg-surface-raised disabled:text-ink-faint"
       style={{ height: "3.75rem" }}
     >
-      {pending ? "Byrja…" : disabled ? "Veldu a.m.k. fjóra" : "Byrja kvöldið"}
+      {pending ? "Byrja…" : disabled ? "Veldu a.m.k. tvo" : "Byrja kvöldið"}
     </button>
   );
 }

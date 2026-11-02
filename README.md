@@ -119,6 +119,10 @@ vercel deploy --prod
   score cannot reach the table by any route. Existing databases need
   `db/migrations/002-seven-nil.sql` run once.
 - **Winners keep the court** — pre-filled on the next-match form.
+- **1v1 is its own competition.** For nights when only two or three turn up.
+  It never counts towards the 2v2 table, pairs, honors or maður kvöldsins;
+  it gets a table of its own on Tölfræði and on the night. No honor in 1v1.
+  Existing databases need `db/migrations/003-singles.sql` run once.
 - A pair winning **three straight** earns the honor and must split. The app
   **warns but never blocks** if you pair them again: rotation is decided by
   humans, and varies with how many turned up.

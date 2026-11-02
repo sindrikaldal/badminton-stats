@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
+import { KindSwitch } from "@/components/KindSwitch";
 import { EmptyState, SectionTitle, Shell } from "@/components/Shell";
 import {
   type LeaderboardSort,
@@ -9,7 +10,7 @@ import {
   seasonStats,
   winRateTone,
 } from "@/lib/domain/stats";
-import type { Player } from "@/lib/domain/types";
+import { type Player, isSingles } from "@/lib/domain/types";
 import * as repo from "@/lib/repo";
 
 export const dynamic = "force-dynamic";
@@ -25,16 +26,19 @@ const SORTS: { key: string; sort: LeaderboardSort; label: string }[] = [
   { key: "sigrar", sort: "wins", label: "Sigrar" },
 ];
 
+type View = { flipi: string; timabil?: string; rada?: string; leikur?: string };
+
 /**
- * Every link on the page carries the whole view -- tab, season and sort -- so
- * switching one never resets another. Defaults are left out to keep the URLs
- * short.
+ * Every link on the page carries the whole view -- tab, season, sort and kind
+ * of game -- so switching one never resets another. Defaults are left out to
+ * keep the URLs short.
  */
-function hrefFor(view: { flipi: string; timabil?: string; rada?: string }) {
+function hrefFor(view: View) {
   const params = new URLSearchParams();
   if (view.flipi !== "stada") params.set("flipi", view.flipi);
   if (view.timabil) params.set("timabil", view.timabil);
   if (view.rada && view.rada !== SORTS[0].key) params.set("rada", view.rada);
+  if (view.leikur) params.set("leikur", view.leikur);
   const query = params.toString();
   return `/tolfraedi${query ? `?${query}` : ""}`;
 }
@@ -42,12 +46,25 @@ function hrefFor(view: { flipi: string; timabil?: string; rada?: string }) {
 export default async function StatsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ flipi?: string; timabil?: string; rada?: string }>;
+  searchParams: Promise<{
+    flipi?: string;
+    timabil?: string;
+    rada?: string;
+    leikur?: string;
+  }>;
 }) {
-  const { flipi, timabil, rada } = await searchParams;
-  const tab = TABS.find((t) => t.key === flipi)?.key ?? "stada";
+  const { flipi, timabil, rada, leikur } = await searchParams;
+  // 1v1 is its own table, never folded into the 2v2 one. It has no pairs.
+  const singles = leikur === "1a1";
+  const tabs = singles ? TABS.filter((t) => t.key !== "por") : TABS;
+  const tab = tabs.find((t) => t.key === flipi)?.key ?? "stada";
   const sort = SORTS.find((s) => s.key === rada) ?? SORTS[0];
-  const view = { flipi: tab, timabil, rada: sort.key };
+  const view: View = {
+    flipi: tab,
+    timabil,
+    rada: sort.key,
+    leikur: singles ? "1a1" : undefined,
+  };
 
   const [seasons, players] = await Promise.all([
     repo.getSeasons(),
@@ -79,43 +96,64 @@ export default async function StatsPage({
     players.map((p) => p.id),
     // Guests count towards everyone's record but are never named by an award.
     new Set(players.filter((p) => !p.isGuest).map((p) => p.id)),
+    singles,
+  );
+  // The switch only appears once somebody has played 1v1.
+  const showKind = singles || sessions.some((s) => s.matches.some(isSingles));
+  const seasonChips = (
+    <>
+      {seasons.map((option) => (
+        <SeasonChip
+          key={option.id}
+          href={hrefFor({ ...view, timabil: String(option.id) })}
+          active={!allTime && option.id === season.id}
+        >
+          {option.name}
+        </SeasonChip>
+      ))}
+      {seasons.length > 1 ? (
+        <SeasonChip href={hrefFor({ ...view, timabil: "allt" })} active={allTime}>
+          Frá upphafi
+        </SeasonChip>
+      ) : null}
+    </>
   );
   const byId = new Map(players.map((p) => [p.id, p]));
 
   return (
     <Shell status={allTime ? "Frá upphafi" : season.name}>
-      <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3">
-        <div>
-          <p className="display text-lg text-ink">
-            {stats.totalSessions} kvöld
-          </p>
-          <p className="text-xs text-ink-faint">
-            {stats.totalMatches} leikir skráðir
-          </p>
+      <div className="mt-2 rounded-lg border border-line bg-surface px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="display text-lg text-ink">
+              {stats.totalSessions} kvöld
+            </p>
+            <p className="text-xs text-ink-faint">
+              {stats.totalMatches} leikir skráðir
+            </p>
+          </div>
+          {/* Once anyone has played 1v1, the two competitions take the corner
+              and the seasons drop to a row of their own. */}
+          {showKind ? (
+            <KindSwitch
+              singles={singles}
+              hrefFor={(value) =>
+                hrefFor({ ...view, leikur: value ? "1a1" : undefined })
+              }
+            />
+          ) : (
+            <div className="flex flex-wrap justify-end gap-1.5">{seasonChips}</div>
+          )}
         </div>
-        <div className="flex flex-wrap justify-end gap-1.5">
-          {seasons.map((option) => (
-            <SeasonChip
-              key={option.id}
-              href={hrefFor({ ...view, timabil: String(option.id) })}
-              active={!allTime && option.id === season.id}
-            >
-              {option.name}
-            </SeasonChip>
-          ))}
-          {seasons.length > 1 ? (
-            <SeasonChip
-              href={hrefFor({ ...view, timabil: "allt" })}
-              active={allTime}
-            >
-              Frá upphafi
-            </SeasonChip>
-          ) : null}
-        </div>
+        {showKind ? (
+          <div className="mt-3 flex flex-wrap gap-1.5 border-t border-line pt-3">
+            {seasonChips}
+          </div>
+        ) : null}
       </div>
 
       <nav className="mt-4 flex gap-2">
-        {TABS.map((option) => (
+        {tabs.map((option) => (
           <Link
             key={option.key}
             href={hrefFor({ ...view, flipi: option.key })}
@@ -177,7 +215,7 @@ function Leaderboard({
   stats: ReturnType<typeof seasonStats>;
   byId: Map<number, Player>;
   sort: (typeof SORTS)[number];
-  view: { flipi: string; timabil?: string; rada?: string };
+  view: View;
 }) {
   const byWins = sort.sort === "wins";
   const rows = rankedLeaderboard(stats.players, sort.sort).filter(

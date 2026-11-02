@@ -18,7 +18,7 @@ import {
   seasonStats,
 } from "@/lib/domain/stats";
 import { pairStreaksInSession } from "@/lib/domain/streaks";
-import type { Player } from "@/lib/domain/types";
+import { type Player, isSingles } from "@/lib/domain/types";
 import * as repo from "@/lib/repo";
 import { Arrow } from "@/components/Arrow";
 
@@ -56,7 +56,8 @@ export default async function PlayerPage({
       ? await Promise.all(seasons.map((s) => repo.getSessions(s.id)))
       : [await repo.getSessions(season.id)];
   const sessions = sessionLists.flat();
-  const matches = sessions.flatMap((s) => s.matches);
+  // Partners, opponents and nemeses are 2v2 business; 1v1 gets one line below.
+  const matches = sessions.flatMap((s) => s.matches).filter((m) => !isSingles(m));
 
   // Guests are opponents like anyone else, but never candidates: an erkifjandi
   // you have met on one evening is not an erkifjandi.
@@ -68,6 +69,12 @@ export default async function PlayerPage({
     regulars,
   );
   const mine = stats.players.find((s) => s.playerId === playerId);
+  const mySingles = seasonStats(
+    sessions,
+    players.map((p) => p.id),
+    regulars,
+    true,
+  ).players.find((s) => s.playerId === playerId);
   const ranked = rankedLeaderboard(stats.players).filter((s) => s.played > 0);
   const rank = ranked.findIndex((s) => s.playerId === playerId);
 
@@ -259,6 +266,15 @@ export default async function PlayerPage({
                 tone="muted"
               />
             )}
+            {mySingles && mySingles.played > 0 ? (
+              <Tile
+                compact
+                label="1 á 1"
+                value={`${mySingles.wins}–${mySingles.losses}`}
+                detail={`${formatPercent(mySingles.winRate)} · aðskilið frá 2 á 2`}
+                tone={mySingles.winRate >= 0.5 ? "win" : "muted"}
+              />
+            ) : null}
           </div>
 
           {best ? (
@@ -407,7 +423,7 @@ function BarList({
 
   return (
     <ul className="card divide-y divide-line/60">
-      {rows.map((row) => {
+      {rows.map((row, i) => {
         const other = byId.get(row.opponent);
         if (!other) return null;
         return (
@@ -426,8 +442,12 @@ function BarList({
             </div>
             <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-input">
               <div
-                className={`h-full ${bar}`}
-                style={{ width: `${Math.round(row.winRate * 100)}%` }}
+                className={`animate-grow h-full ${bar}`}
+                style={{
+                  width: `${Math.round(row.winRate * 100)}%`,
+                  // A short cascade down the list, capped so a long one is not a wait.
+                  animationDelay: `${Math.min(i, 8) * 40}ms`,
+                }}
               />
             </div>
           </li>

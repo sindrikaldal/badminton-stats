@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { logMatch } from "@/app/actions";
 import { Celebration } from "./Celebration";
+import { KindSwitch } from "./KindSwitch";
 import { Court } from "./Court";
 import { MatchList } from "./MatchList";
 import { SevenNil } from "./SevenNil";
@@ -12,10 +13,12 @@ import {
   type PairKey,
   type Player,
   type PlayerId,
+  type Team,
   pairKey,
   scoreProblem,
 } from "@/lib/domain/types";
-import type { Honor, PairStreak } from "@/lib/domain/streaks";
+import type { Honor } from "@/lib/domain/streaks";
+import { useLastChange } from "@/lib/useLastChange";
 
 type Slots = [PlayerId | null, PlayerId | null, PlayerId | null, PlayerId | null];
 
@@ -25,9 +28,9 @@ export function SessionBoard({
   sessionId,
   attendees,
   matches,
-  holdingPair,
+  holding,
   mustSplit,
-  currentStreak,
+  holdingRun,
   honorsTonight,
   celebrate,
   shame,
@@ -36,9 +39,11 @@ export function SessionBoard({
   sessionId: number;
   attendees: Player[];
   matches: Match[];
-  holdingPair: [PlayerId, PlayerId] | null;
+  /** Whoever won the last game: a pair, or a lone 1v1 winner. */
+  holding: Team | null;
   mustSplit: PairKey | null;
-  currentStreak: PairStreak | null;
+  /** How many in a row `holding` has won. */
+  holdingRun: number;
   honorsTonight: number;
   celebrate: Honor | null;
   /** The match just logged, if it ended 7-0. Shown before any honor. */
@@ -57,12 +62,16 @@ export function SessionBoard({
   // been split, in which case nobody is pre-filled. Keyed on the ids, not the
   // array: every background refresh delivers a fresh one, and resetting on it
   // would wipe a half-entered game every few seconds.
-  const [held1, held2] = holdingPair ?? [null, null];
+  const [held1, held2] = holding ?? [null, null];
   const initial = useMemo<Slots>(() => {
-    if (held1 === null || held2 === null || mustSplit) return EMPTY;
-    return [held1, held2, null, null];
+    if (held1 === null || mustSplit) return EMPTY;
+    return [held1, held2 ?? null, null, null];
   }, [held1, held2, mustSplit]);
 
+  // The next game is the same kind as the last; the first is 1v1 only when
+  // there are too few for 2v2.
+  const defaultSingles = holding ? holding.length === 1 : attendees.length < 4;
+  const [singles, setSingles] = useState(defaultSingles);
   const [slots, setSlots] = useState<Slots>(initial);
   const [scoreA, setScoreA] = useState(11);
   const [scoreB, setScoreB] = useState(0);
@@ -71,10 +80,11 @@ export function SessionBoard({
 
   // A logged match re-renders the page; start the next one clean.
   useEffect(() => {
+    setSingles(defaultSingles);
     setSlots(initial);
     setScoreA(11);
     setScoreB(0);
-  }, [initial, lastMatchId]);
+  }, [defaultSingles, initial, lastMatchId]);
 
   // A game that lands from another phone wipes the form just like our own
   // would, so say whose it was -- or the same game gets entered again.
@@ -102,11 +112,17 @@ export function SessionBoard({
         next[at] = null;
         return next;
       }
-      const free = next.indexOf(null);
-      if (free === -1) return next;
+      const free = (singles ? [0, 2] : [0, 1, 2, 3]).find((i) => next[i] === null);
+      if (free === undefined) return next;
       next[free] = playerId;
       return next;
     });
+  };
+
+  // Partners leave the court for 1v1; switching back leaves their boxes empty.
+  const chooseSingles = (value: boolean) => {
+    setSingles(value);
+    if (value) setSlots(([a1, , b1]) => [a1, null, b1, null]);
   };
 
   const clearSlot = (index: number) =>
@@ -125,7 +141,9 @@ export function SessionBoard({
 
   const teamA = [slots[0], slots[1]];
   const teamB = [slots[2], slots[3]];
-  const complete = slots.every((s) => s !== null);
+  const complete = singles
+    ? slots[0] !== null && slots[2] !== null
+    : slots.every((s) => s !== null);
 
   const pairA = teamA[0] && teamA[1] ? pairKey(teamA[0], teamA[1]) : null;
   const pairB = teamB[0] && teamB[1] ? pairKey(teamB[0], teamB[1]) : null;
@@ -155,16 +173,19 @@ export function SessionBoard({
         />
       ) : null}
 
-      {currentStreak && currentStreak.length > 0 && holdingPair ? (
+      {holdingRun > 0 && holding ? (
         <StreakBanner
-          players={holdingPair.map((id) => byId.get(id)).filter((p) => p !== undefined)}
-          length={currentStreak.length}
+          players={holding.map((id) => byId.get(id)).filter((p) => p !== undefined)}
+          length={holdingRun}
           mustSplit={mustSplit !== null}
+          // Logging a game remounts the page, so this phone's own result
+          // cannot be seen as a change; it is told instead.
+          justLogged={justLogged !== null}
         />
       ) : null}
 
       {loggedElsewhere ? (
-        <div className="mt-4">
+        <div className="animate-rise mt-4">
           <p className="eyebrow mb-2 text-challenge">
             Skráður í öðrum síma rétt í þessu
           </p>
@@ -177,11 +198,16 @@ export function SessionBoard({
           <h2 className="display text-[1.75rem] leading-none text-ink">
             Leikur {matches.length + 1}
           </h2>
-          <p className="text-right text-xs font-medium text-ink-faint">
-            {complete ? "Skiptu um leikmenn með því að ýta" : "Veldu fjóra"}
-          </p>
+          <KindSwitch singles={singles} onChange={chooseSingles} />
         </div>
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <p className="mt-2 text-xs font-medium text-ink-faint">
+          {complete
+            ? "Skiptu um leikmenn með því að ýta"
+            : singles
+              ? "Veldu tvo"
+              : "Veldu fjóra"}
+        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
           {attendees.map((player) => {
             const at = slots.indexOf(player.id);
             const placed = at !== -1;
@@ -192,7 +218,7 @@ export function SessionBoard({
                 type="button"
                 onClick={() => place(player.id)}
                 aria-pressed={placed}
-                className={`display flex h-9 items-center rounded-full border-2 px-3 text-base transition-colors ${
+                className={`display flex h-9 items-center rounded-full border-2 px-3 text-base transition duration-150 active:scale-95 ${
                   placed
                     ? side === "a"
                       ? "border-win bg-win text-tape"
@@ -208,6 +234,7 @@ export function SessionBoard({
 
         <Court
           slots={slots}
+          singles={singles}
           byId={byId}
           onClear={clearSlot}
           scoreA={scoreA}
@@ -251,7 +278,9 @@ export function SessionBoard({
           {pending
             ? "Skrái…"
             : !complete
-              ? "Veldu fjóra leikmenn"
+              ? singles
+                ? "Veldu tvo leikmenn"
+                : "Veldu fjóra leikmenn"
               : problem
                 ? "Yfirfarðu stigin"
                 : `Skrá úrslit ${scoreA}–${scoreB}`}
@@ -273,22 +302,32 @@ function StreakBanner({
   players,
   length,
   mustSplit,
+  justLogged,
 }: {
   players: Player[];
   length: number;
   mustSplit: boolean;
+  justLogged: boolean;
 }) {
   const names = players.map((p) => p.shortName).join(" & ");
   const onFire = length >= 2;
+  // Bumps when the run moves -- another phone's game or this one's -- never
+  // just because the page loaded.
+  const moved = useLastChange(length) !== null || justLogged;
+  // No honor in 1v1, so a lone winner's run counts towards nothing.
+  const alone = players.length === 1;
 
   return (
     <div
-      className={`mt-4 flex items-center gap-3 rounded-lg px-3 py-2.5 first:mt-0 ${
+      className={`mt-4 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-300 first:mt-0 ${
         mustSplit ? "bg-shuttle" : "bg-surface"
       }`}
     >
       <span
+        key={length}
         className={`display tnum flex size-10 shrink-0 items-center justify-center rounded-lg text-[1.625rem] ${
+          moved ? "animate-bump" : ""
+        } ${
           mustSplit
             ? "bg-ink text-shuttle"
             : onFire
@@ -304,8 +343,12 @@ function StreakBanner({
           {mustSplit
             ? `${HONOR_STREAK_LENGTH} í röð — parið splittast núna`
             : length === 1
-              ? "Halda vellinum"
-              : `${length} í röð · ${HONOR_STREAK_LENGTH - (length % HONOR_STREAK_LENGTH)} í heiðurinn`}
+              ? alone
+                ? "Heldur vellinum"
+                : "Halda vellinum"
+              : alone
+                ? `${length} í röð`
+                : `${length} í röð · ${HONOR_STREAK_LENGTH - (length % HONOR_STREAK_LENGTH)} í heiðurinn`}
         </p>
       </div>
     </div>
