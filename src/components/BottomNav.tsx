@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 const TABS = [
   { href: "/", label: "Kvöldið", icon: ShuttleIcon },
@@ -18,11 +18,20 @@ const TABS = [
  */
 let barWasAt: number | null = null;
 
-export function BottomNav() {
-  const pathname = usePathname();
-  const current = TABS.findIndex(({ href }) =>
+/** Which tab a path belongs to, or -1 for a page outside them (a game). */
+export function tabIndex(pathname: string) {
+  return TABS.findIndex(({ href }) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href),
   );
+}
+
+export function BottomNav() {
+  const pathname = usePathname();
+  // The tab just tapped, shown at once: the page itself can take a moment to
+  // come from the server, and the tap must not look ignored meanwhile.
+  const [picked, setPicked] = useState<number | null>(null);
+  const here = tabIndex(pathname);
+  const current = picked ?? here;
   const bar = useRef<HTMLSpanElement>(null);
 
   useLayoutEffect(() => {
@@ -43,12 +52,8 @@ export function BottomNav() {
     <nav
       className="shrink-0 bg-ink"
       // The full inset left a band under the labels; the home indicator only
-      // needs the lower part of it kept clear. Named so a page sliding past
-      // leaves it standing (globals.css).
-      style={{
-        paddingBottom: "max(env(safe-area-inset-bottom, 0px) - 12px, 0px)",
-        viewTransitionName: "tab-bar",
-      }}
+      // needs the lower part of it kept clear.
+      style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px) - 12px, 0px)" }}
     >
       <ul className="relative mx-auto flex max-w-[480px]">
         {current !== -1 ? (
@@ -65,12 +70,8 @@ export function BottomNav() {
             <li key={href} className="flex-1">
               <Link
                 href={href}
-                // The tabs lie left to right, so the page comes from the side
-                // of the tab picked; its own tab, from a page inside it, is back.
-                transitionTypes={
-                  pathname === href ? undefined : [index > current ? "nav-forward" : "nav-back"]
-                }
-                aria-current={active ? "page" : undefined}
+                onNavigate={() => setPicked(index)}
+                aria-current={index === here ? "page" : undefined}
                 className={`flex h-14 flex-col items-center justify-center gap-1.5 border-t-[3px] border-transparent transition-colors ${
                   active ? "text-shuttle" : "text-[#9aa59e] active:text-tape"
                 }`}

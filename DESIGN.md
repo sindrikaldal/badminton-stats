@@ -294,11 +294,11 @@ Run of three: the screen becomes shuttle yellow with white cards, ink display ty
 Motion explains the court and lands the moments; it never makes anyone wait. Arrivals use one curve, ease-out expo (`--ease-arrive`, `cubic-bezier(0.16, 1, 0.3, 1)`), and only stamps overshoot.
 
 - **The court (focal):** scores roll on a reel inside a clipped window, the old number leaving as the new one arrives (up for higher, down for lower, 260ms); a tapped player's name flies from their chip into the service box, shrinking or growing to fit (420ms); on a swap the names cross the net above it while the arrows spin a half-turn and both scores roll; a name re-centres when its box widens for 1v1. Steppers, shortcuts and chips press in. Switching to 1v1 draws the tramlines in from the net (300ms).
-- **Screens:** pages travel by React view transitions. A tab to the right brings its page in from the right, one to the left from the left; going into a night, a player or a game is forward, a back link is back. The old page leaves fast (160ms, 32px) and the new one decelerates in (360ms, 48px); the header and tab bar are named out of the slide and stand still. Only links that say which way they lead slide: refreshes, logging a game and the browser's own back swap in place.
+- **Screens:** a page slides in from the side it lies on (280ms, 28px, with a quick fade): a tab to the right from the right, a step inside (a night, a player, a game) from the right, going back out from the left. The direction comes from the URLs, by tab order and then depth. Only the arriving page moves; the old one is already gone, so two pages are never on screen together. The tab bar answers the tap at once, bar and colour, while the page is still on its way from the server. Refreshes, logging a game and filter changes on the same page do not slide.
 - **Continuity:** the tab bar's yellow bar slides from the tab you left; tonight's standings glide to their new order; the game just logged lands in the list with a fading green wash; the run tile bumps when the run changes.
 - **Moments:** stamps and the shake above, and partner and opponent bars filling from the left on a player page, cascading 40ms apart and capped.
 - **Rule:** nothing animates on a plain page load or a background refresh. Logging a game remounts the page, so anything that must survive it (bar position, row order) is remembered at module scope.
-- **Reduced motion:** every change still happens, instantly; delays drop too, so nothing waits invisible. Screen slides and name flights are skipped outright.
+- **Reduced motion:** every change still happens, instantly; delays drop too, so nothing waits invisible. Page slides and name flights are skipped outright.
 
 ## Do's and Don'ts
 
