@@ -1,15 +1,19 @@
 import Link from "next/link";
 import { BottomNav } from "./BottomNav";
 import { CourtMark } from "./CourtMark";
+import { HeaderStatus } from "./HeaderStatus";
 import { PageIn } from "./PageIn";
 
 export function Shell({
   children,
   status,
+  loading = false,
 }: {
   children: React.ReactNode;
   /** Small line under the wordmark: the live season or evening. */
   status?: string;
+  /** The skeleton shown while a page comes from the server (loading.tsx). */
+  loading?: boolean;
 }) {
   // Pinned to the viewport, and only <main> scrolls. As a home-screen app iOS
   // gets vh/dvh wrong by the status bar's height (WebKit bug 316008), so no
@@ -30,18 +34,14 @@ export function Shell({
               <span className="display block text-[1.625rem] leading-none text-ink">
                 Badd Boys
               </span>
-              {status ? (
-                <span className="mt-1 block truncate text-xs font-medium text-ink-faint">
-                  {status}
-                </span>
-              ) : null}
+              <HeaderStatus status={status} loading={loading} />
             </span>
           </Link>
         </div>
       </header>
 
       <main className="flex-1 overflow-y-auto overscroll-y-contain">
-        <PageIn className="mx-auto w-full max-w-[480px] px-4 pt-4 pb-8">
+        <PageIn loading={loading} className="mx-auto w-full max-w-[480px] px-4 pt-4 pb-8">
           {children}
         </PageIn>
       </main>

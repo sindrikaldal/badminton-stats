@@ -1,13 +1,12 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
 import { useLayoutEffect, useRef } from "react";
 import { tabIndex } from "./BottomNav";
 
-/** Where a page sits: which tab, and how far inside it. */
-type Place = { key: string; tab: number; depth: number };
+/** Where a page sits: which tab, how far inside it, and if it is still loading. */
+type Place = { key: string; tab: number; depth: number; loading: boolean };
 
-function placeOf(pathname: string, search: URLSearchParams): Place {
+function placeOf(pathname: string, search: URLSearchParams, loading: boolean): Place {
   // A night, or the new-night form, is one step inside Kvöldið. Other search
   // params (a season, a sort, a just-logged game) are the same page.
   const inner = search.get("kvold") ?? (search.has("nytt") ? "nytt" : "");
@@ -15,6 +14,7 @@ function placeOf(pathname: string, search: URLSearchParams): Place {
     key: `${pathname}?${inner}`,
     tab: tabIndex(pathname),
     depth: pathname.split("/").filter(Boolean).length + (inner ? 1 : 0),
+    loading,
   };
 }
 
@@ -27,24 +27,41 @@ let shown: Place | null = null;
  * back out from the left. Only the arriving page moves; the one it replaces
  * is already gone, so two pages are never on screen at once.
  *
+ * A tap shows the page's skeleton at once (loading.tsx), so the skeleton is
+ * what slides; the content then fades into it where it already stands.
+ *
  * Nothing moves on first load, on a refresh, or when logging a game lands
  * back on the same page.
  */
 export function PageIn({
+  loading = false,
   className,
   children,
 }: {
+  loading?: boolean;
   className?: string;
   children: React.ReactNode;
 }) {
-  const place = placeOf(usePathname(), useSearchParams());
   const page = useRef<HTMLDivElement>(null);
 
+  // Every commit, reading the address itself: Next has already written the
+  // new URL (an insertion effect) by now, and the search-params hook would
+  // stop the loading state from prerendering on the static 404 page.
   useLayoutEffect(() => {
+    const place = placeOf(location.pathname, new URLSearchParams(location.search), loading);
     const from = shown;
     shown = place;
-    if (!from || from.key === place.key || !page.current) return;
+    if (!from || !page.current) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (from.key === place.key) {
+      if (from.loading && !place.loading) {
+        page.current.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: 180,
+          easing: "ease-out",
+        });
+      }
+      return;
+    }
     // Across tabs the tab order decides; within one, or to a game, depth does.
     const way =
       from.tab !== place.tab && from.tab !== -1 && place.tab !== -1
@@ -58,8 +75,7 @@ export function PageIn({
       ],
       { duration: 280, easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
     );
-    // Keyed on the page's identity: every render brings a fresh params object.
-  }, [place.key]);
+  });
 
   return (
     <div ref={page} className={className}>
