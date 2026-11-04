@@ -5,7 +5,6 @@ import {
   EndSession,
   ReopenSession,
 } from "@/components/EndSession";
-import { LiveRefresh } from "@/components/LiveRefresh";
 import { MeProvider, WhoAmI } from "@/components/Me";
 import { EmptyState, SectionTitle, Shell } from "@/components/Shell";
 import { MatchList } from "@/components/MatchList";
@@ -96,8 +95,6 @@ export default async function TonightPage({
     const history = await repo.getSessionSummaries();
     return (
       <Shell status={season.name}>
-        {/* So a night started on another phone shows up here. */}
-        <LiveRefresh />
         <MeProvider>
           <WhoAmI players={players} />
         </MeProvider>
@@ -176,7 +173,6 @@ export default async function TonightPage({
     <Shell
       status={`${season.name} · ${formatIcelandicWeekday(session.playedOn)} ${formatIcelandicDate(session.playedOn)}`}
     >
-      <LiveRefresh />
       <MeProvider>
         <WhoAmI players={players} />
 

@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { getVersion } from "@/lib/repo";
 import { BottomNav } from "./BottomNav";
 import { CourtMark } from "./CourtMark";
 import { HeaderStatus } from "./HeaderStatus";
+import { LiveRefresh } from "./LiveRefresh";
 import { PageIn } from "./PageIn";
 
-export function Shell({
+export async function Shell({
   children,
   status,
   loading = false,
@@ -21,6 +23,13 @@ export function Shell({
   // under the status bar, and a dvh cap left a gap under the tab bar.
   // `inset-0` takes the real screen, and with nothing in the page flow the
   // page has nothing to scroll.
+  //
+  // The fingerprint of the data this render was made from, so LiveRefresh can
+  // tell when the page is behind. None for a skeleton, which must not wait.
+  // ponytail: read after the page's own queries, so a game logged in those few
+  // milliseconds is missed until the next change. Fine at this scale.
+  const version = loading ? null : await getVersion();
+
   return (
     <div className="fixed inset-0 flex flex-col">
       <header
@@ -46,6 +55,7 @@ export function Shell({
         </PageIn>
       </main>
 
+      {version ? <LiveRefresh version={version} /> : null}
       <BottomNav />
     </div>
   );

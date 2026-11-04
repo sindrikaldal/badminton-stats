@@ -70,6 +70,9 @@ export function BottomNav() {
             <li key={href} className="flex-1">
               <Link
                 href={href}
+                // Every other tab loaded in full and kept in memory, so a tap
+                // needs no server; LiveRefresh corrects one that is behind.
+                prefetch={pathname !== href}
                 onNavigate={() => setPicked(index)}
                 aria-current={index === here ? "page" : undefined}
                 className={`flex h-14 flex-col items-center justify-center gap-1.5 border-t-[3px] border-transparent transition-colors ${

@@ -430,3 +430,22 @@ function toIsoDate(value: Date | string): string {
   if (typeof value === "string") return value.slice(0, 10);
   return value.toISOString().slice(0, 10);
 }
+
+/**
+ * A fingerprint of everything the app shows: every row of every table, so any
+ * game, night, attendee, player or season logged, edited or deleted changes
+ * it. LiveRefresh compares it to the one a page was rendered from, which is
+ * far cheaper than re-rendering the page to find out whether anything moved.
+ */
+export async function getVersion(): Promise<string> {
+  const [row] = await sql<{ v: string }[]>`
+    SELECT md5(concat_ws('#',
+      coalesce((SELECT string_agg(t::text, '|' ORDER BY t.id) FROM seasons t), ''),
+      coalesce((SELECT string_agg(t::text, '|' ORDER BY t.id) FROM players t), ''),
+      coalesce((SELECT string_agg(t::text, '|' ORDER BY t.id) FROM sessions t), ''),
+      coalesce((SELECT string_agg(t::text, '|' ORDER BY t.session_id, t.player_id) FROM session_attendees t), ''),
+      coalesce((SELECT string_agg(t::text, '|' ORDER BY t.id) FROM matches t), '')
+    )) AS v
+  `;
+  return row.v;
+}
