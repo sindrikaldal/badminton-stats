@@ -97,7 +97,7 @@ export default async function PlayerPage({
 
   return (
     <Shell status={allTime ? "Frá upphafi" : season?.name}>
-      <Link href="/leikmenn" transitionTypes={["nav-back"]} className="eyebrow inline-flex min-h-11 items-center gap-1.5">
+      <Link href="/leikmenn" className="eyebrow inline-flex min-h-11 items-center gap-1.5">
         <Arrow direction="left" />
             Leikmenn
       </Link>

@@ -73,14 +73,14 @@ export default async function TonightPage({
   if (params.nytt === "1") {
     const open = await repo.getOpenSession();
     return (
-      <Shell key="nytt" status={season.name}>
+      <Shell status={season.name}>
         <MeProvider>
           <WhoAmI players={players} />
         </MeProvider>
         <SectionTitle>Nýtt badmintonkvöld</SectionTitle>
         {open ? (
           <EmptyState title="Það er kvöld í gangi">
-            <Link href={`/?kvold=${open.id}`} transitionTypes={["nav-forward"]} className="text-win underline">
+            <Link href={`/?kvold=${open.id}`} className="text-win underline">
               Opna {formatIcelandicDate(open.playedOn)}
             </Link>{" "}
             og ljúka því fyrst.
@@ -95,7 +95,7 @@ export default async function TonightPage({
   if (!session) {
     const history = await repo.getSessionSummaries();
     return (
-      <Shell key="kvoldin" status={season.name}>
+      <Shell status={season.name}>
         {/* So a night started on another phone shows up here. */}
         <LiveRefresh />
         <MeProvider>
@@ -111,7 +111,6 @@ export default async function TonightPage({
           </p>
           <Link
             href="/?nytt=1"
-            transitionTypes={["nav-forward"]}
             className="display mt-4 flex items-center justify-center rounded-lg bg-shuttle text-xl tracking-[0.04em] text-ink"
             style={{ height: "3.5rem" }}
           >
@@ -175,9 +174,6 @@ export default async function TonightPage({
 
   return (
     <Shell
-      // One key per view, so moving between nights on this one page slides
-      // like moving between pages. Logging a game keeps the key: no slide.
-      key={`kvold-${session.id}`}
       status={`${season.name} · ${formatIcelandicWeekday(session.playedOn)} ${formatIcelandicDate(session.playedOn)}`}
     >
       <LiveRefresh />
@@ -185,7 +181,7 @@ export default async function TonightPage({
         <WhoAmI players={players} />
 
         {!isOpen ? (
-          <Link href="/" transitionTypes={["nav-back"]} className="eyebrow inline-flex min-h-11 items-center gap-1.5">
+          <Link href="/" className="eyebrow inline-flex min-h-11 items-center gap-1.5">
             <Arrow direction="left" />
             Öll kvöld
           </Link>
