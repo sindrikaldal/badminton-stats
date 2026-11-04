@@ -43,6 +43,7 @@ export default async function MatchesPage({
         <SectionTitle>Kvöldin</SectionTitle>
         <Link
           href="/?nytt=1"
+          transitionTypes={["nav-back"]}
           className="display mt-6 mb-3 rounded-lg bg-shuttle px-3 py-2 text-lg tracking-[0.06em] text-ink"
         >
           + Nýtt kvöld
@@ -98,6 +99,7 @@ export default async function MatchesPage({
                   </div>
                   <Link
                     href={`/?kvold=${session.id}`}
+                    transitionTypes={["nav-back"]}
                     className="display shrink-0 rounded-lg border border-line px-3 py-1.5 text-xs tracking-[0.06em] text-ink-muted"
                   >
                     Opna

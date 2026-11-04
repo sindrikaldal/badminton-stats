@@ -21,6 +21,7 @@ export function SessionHistory({
         <li key={session.id}>
           <Link
             href={`/?kvold=${session.id}`}
+            transitionTypes={["nav-forward"]}
             className={`flex items-center gap-3 px-3 py-3 ${
               session.endedAt === null ? "bg-win-dim" : ""
             }`}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { SEVEN_NIL, type Player, type PlayerId } from "@/lib/domain/types";
 import { useLastChange } from "@/lib/useLastChange";
 
@@ -39,6 +39,8 @@ export function Court({
   const winnerSide = scoreA > scoreB ? "a" : scoreB > scoreA ? "b" : null;
   // Half-turns of the swap arrows; each press spins them once more.
   const [turns, setTurns] = useState(0);
+  const court = useRef<HTMLDivElement>(null);
+  usePlayersTravel(court);
 
   // Out of play in singles: the side alleys between these lines and the edge.
   const tramline = `pointer-events-none absolute inset-y-0 w-[3px] bg-tape transition-transform duration-300 ease-arrive ${
@@ -47,7 +49,7 @@ export function Court({
 
   return (
     <div className="-mx-4 mt-3 bg-court px-4 py-3">
-      <div className="relative border-[3px] border-tape">
+      <div ref={court} className="relative border-[3px] border-tape">
         <span aria-hidden className={`${tramline} left-2`} />
         <span aria-hidden className={`${tramline} right-2`} />
 
@@ -80,7 +82,7 @@ export function Court({
             className="flex size-11 items-center justify-center rounded-full border-[3px] border-court-deep bg-tape text-court transition-transform duration-100 active:scale-90 active:bg-shuttle"
           >
             <span
-              className="flex transition-transform duration-300 ease-arrive"
+              className="flex transition-transform duration-[420ms] ease-arrive"
               style={{ transform: `rotate(${turns * 180}deg)` }}
             >
               <SwapIcon />
@@ -192,12 +194,12 @@ function CourtHalf({
             }`}
           >
             {player ? (
-              // Keyed on the player, so whoever takes the box walks on from the net.
+              // Keyed on the player, so taking a box is a fresh arrival.
+              // Above the net, so a name crossing it on a swap stays in view.
               <span
                 key={player.id}
-                className={`display truncate text-[1.375rem] ${
-                  side === "a" ? "animate-step-up" : "animate-step-down"
-                }`}
+                data-player={player.id}
+                className="display relative z-10 truncate text-[1.375rem]"
               >
                 {player.shortName}
               </span>
@@ -247,7 +249,10 @@ function CourtHalf({
   );
 }
 
-/** The score at the net, rolling like a scoreboard digit when it changes. */
+/**
+ * The score at the net, rolling like a scoreboard: the old number leaves the
+ * window as the new one comes in behind it, up for higher, down for lower.
+ */
 function Score({
   value,
   leading,
@@ -257,24 +262,96 @@ function Score({
   leading: boolean;
   label: string;
 }) {
-  const moved = useLastChange(value);
+  const change = useLastChange(value);
+  const up = change?.dir === "up";
   return (
     <output
       aria-label={`${label}: stig`}
-      className={`display tnum text-[4rem] leading-[0.85] transition-colors duration-200 ${
+      // Two digits wide always, so 10 rolling down to 9 is not cut in half.
+      className={`display tnum relative min-w-[2ch] overflow-hidden text-center text-[4rem] leading-[0.85] transition-colors duration-200 ${
         leading ? "text-shuttle" : "text-tape"
       }`}
     >
+      {/* Keyed on the new value, so every change rolls again from the start. */}
+      {change ? (
+        <span
+          key={`was-${value}`}
+          aria-hidden
+          className={`absolute inset-0 text-center ${up ? "animate-roll-out-up" : "animate-roll-out-down"}`}
+        >
+          {change.from}
+        </span>
+      ) : null}
       <span
         key={value}
-        className={`block ${
-          moved === "up" ? "animate-tick-up" : moved === "down" ? "animate-tick-down" : ""
-        }`}
+        className={`block ${change ? (up ? "animate-roll-in-up" : "animate-roll-in-down") : ""}`}
       >
         {value}
       </span>
     </output>
   );
+}
+
+type Spot = { el: Element; x: number; y: number; size: number };
+
+/**
+ * Names travel to the box they take: from the chip that was tapped, or across
+ * the net when the sides swap, or along with a box that widens for 1v1. So a
+ * tap reads as "that player went there" rather than a name popping up.
+ *
+ * Positions are kept relative to the court, so scrolling between two taps is
+ * not mistaken for movement. Nothing moves on the court's first paint: a page
+ * load or a just-logged game arrives still.
+ */
+function usePlayersTravel(court: React.RefObject<HTMLDivElement | null>) {
+  const placed = useRef<Map<string, Spot> | null>(null);
+
+  // Every render, not on a dependency: only measuring says whether anyone moved.
+  useLayoutEffect(() => {
+    const root = court.current;
+    if (!root) return;
+    const origin = root.getBoundingClientRect();
+    const spot = (el: Element): Spot => {
+      const r = el.getBoundingClientRect();
+      return {
+        el,
+        x: r.left + r.width / 2 - origin.left,
+        y: r.top + r.height / 2 - origin.top,
+        size: parseFloat(getComputedStyle(el).fontSize),
+      };
+    };
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const before = placed.current;
+    const now = new Map<string, Spot>();
+
+    for (const el of Array.from(root.querySelectorAll<HTMLElement>("[data-player]"))) {
+      const id = el.dataset.player!;
+      const was = before?.get(id);
+      // Mid-flight its box is mid-transform too; keep where it is heading.
+      if (was?.el === el && el.getAnimations().length > 0) {
+        now.set(id, was);
+        continue;
+      }
+      const to = spot(el);
+      now.set(id, to);
+      if (!before || still) continue;
+
+      const chip = was ? null : document.querySelector(`[data-chip="${id}"]`);
+      const from = was ?? (chip ? spot(chip) : null);
+      if (!from) continue;
+      const dx = from.x - to.x;
+      const dy = from.y - to.y;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) continue;
+      el.animate(
+        [
+          { transform: `translate(${dx}px, ${dy}px) scale(${from.size / to.size})` },
+          { transform: "none" },
+        ],
+        { duration: 420, easing: "cubic-bezier(0.16, 1, 0.3, 1)" },
+      );
+    }
+    placed.current = now;
+  });
 }
 
 function SwapIcon() {

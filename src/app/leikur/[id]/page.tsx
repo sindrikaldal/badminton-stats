@@ -34,7 +34,7 @@ export default async function MatchPage({
 
   return (
     <Shell status={formatIcelandicDate(session.playedOn)}>
-      <Link href={`/?kvold=${session.id}`} className="eyebrow inline-flex min-h-11 items-center gap-1.5">
+      <Link href={`/?kvold=${session.id}`} transitionTypes={["nav-back"]} className="eyebrow inline-flex min-h-11 items-center gap-1.5">
         <Arrow direction="left" />
             Til baka
       </Link>

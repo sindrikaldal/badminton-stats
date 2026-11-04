@@ -261,6 +261,7 @@ function Leaderboard({
             <li key={row.playerId}>
               <Link
                 href={`/leikmenn/${row.playerId}`}
+                transitionTypes={["nav-forward"]}
                 className={`flex items-center gap-3 px-3 py-2.5 ${
                   rank === 1 ? "bg-win-dim" : ""
                 }`}

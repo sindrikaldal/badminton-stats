@@ -218,6 +218,7 @@ export function SessionBoard({
                 type="button"
                 onClick={() => place(player.id)}
                 aria-pressed={placed}
+                data-chip={player.id}
                 className={`display flex h-9 items-center rounded-full border-2 px-3 text-base transition duration-150 active:scale-95 ${
                   placed
                     ? side === "a"
