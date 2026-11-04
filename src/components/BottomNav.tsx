@@ -43,8 +43,12 @@ export function BottomNav() {
     <nav
       className="shrink-0 bg-ink"
       // The full inset left a band under the labels; the home indicator only
-      // needs the lower part of it kept clear.
-      style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px) - 12px, 0px)" }}
+      // needs the lower part of it kept clear. Named so a page sliding past
+      // leaves it standing (globals.css).
+      style={{
+        paddingBottom: "max(env(safe-area-inset-bottom, 0px) - 12px, 0px)",
+        viewTransitionName: "tab-bar",
+      }}
     >
       <ul className="relative mx-auto flex max-w-[480px]">
         {current !== -1 ? (
@@ -61,6 +65,11 @@ export function BottomNav() {
             <li key={href} className="flex-1">
               <Link
                 href={href}
+                // The tabs lie left to right, so the page comes from the side
+                // of the tab picked; its own tab, from a page inside it, is back.
+                transitionTypes={
+                  pathname === href ? undefined : [index > current ? "nav-forward" : "nav-back"]
+                }
                 aria-current={active ? "page" : undefined}
                 className={`flex h-14 flex-col items-center justify-center gap-1.5 border-t-[3px] border-transparent transition-colors ${
                   active ? "text-shuttle" : "text-[#9aa59e] active:text-tape"

@@ -55,7 +55,7 @@ export function MatchList({
               match.id === fresh ? "animate-land" : ""
             }`}
           >
-            <Link href={`/leikur/${match.id}`} className="block px-3 pt-2 pb-2.5">
+            <Link href={`/leikur/${match.id}`} transitionTypes={["nav-forward"]} className="block px-3 pt-2 pb-2.5">
               <div className="flex min-h-6 items-center justify-between gap-2">
                 <span className="text-xs font-medium text-ink-faint">
                   {showDate && dates?.get(match.sessionId)

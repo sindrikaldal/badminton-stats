@@ -171,49 +171,32 @@
   }
 }
 
-/* Scoreboard digits: a higher number rolls up into place, a lower one down. */
-@keyframes tick-up {
+/*
+ * Scoreboard digits on a reel: a higher number rolls up into the window as
+ * the old one leaves over the top; a lower one rolls down. Both halves share
+ * one curve so the two numbers stay joined, like one strip moving.
+ */
+@keyframes roll-in-up {
   from {
-    opacity: 0.2;
-    transform: translateY(32%);
-  }
-  to {
-    opacity: 1;
-    transform: none;
+    transform: translateY(100%);
   }
 }
 
-@keyframes tick-down {
-  from {
-    opacity: 0.2;
-    transform: translateY(-32%);
-  }
+@keyframes roll-out-up {
   to {
-    opacity: 1;
-    transform: none;
+    transform: translateY(-100%);
   }
 }
 
-/* Players walk on from the net: up into side A's boxes, down into side B's. */
-@keyframes step-up {
+@keyframes roll-in-down {
   from {
-    opacity: 0;
-    transform: translateY(9px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: none;
+    transform: translateY(-100%);
   }
 }
 
-@keyframes step-down {
-  from {
-    opacity: 0;
-    transform: translateY(-9px) scale(0.96);
-  }
+@keyframes roll-out-down {
   to {
-    opacity: 1;
-    transform: none;
+    transform: translateY(100%);
   }
 }
 
@@ -297,20 +280,20 @@
   animation: rise 0.3s var(--ease-arrive) both;
 }
 
-@utility animate-tick-up {
-  animation: tick-up 0.18s var(--ease-arrive) both;
+@utility animate-roll-in-up {
+  animation: roll-in-up 0.26s var(--ease-arrive) both;
 }
 
-@utility animate-tick-down {
-  animation: tick-down 0.18s var(--ease-arrive) both;
+@utility animate-roll-out-up {
+  animation: roll-out-up 0.26s var(--ease-arrive) both;
 }
 
-@utility animate-step-up {
-  animation: step-up 0.22s var(--ease-arrive) both;
+@utility animate-roll-in-down {
+  animation: roll-in-down 0.26s var(--ease-arrive) both;
 }
 
-@utility animate-step-down {
-  animation: step-down 0.22s var(--ease-arrive) both;
+@utility animate-roll-out-down {
+  animation: roll-out-down 0.26s var(--ease-arrive) both;
 }
 
 @utility animate-bump {
@@ -335,6 +318,75 @@
 }
 
 /*
+ * Moving between screens. Picking a tab to the right brings its page in from
+ * the right, one to the left from the left; going into a player or a game is
+ * forward, a back link is back. Only the page travels: the header and the tab
+ * bar are the walls of the hall and stay where they are. The old page leaves
+ * quickly and the new one decelerates in over it.
+ */
+::view-transition {
+  /* A tap during the slide reaches the page instead of the overlay. */
+  pointer-events: none;
+}
+
+/* The header and tab bar stand still above the page, already in their new state. */
+::view-transition-group(app-header),
+::view-transition-group(tab-bar) {
+  animation: none;
+  z-index: 1;
+}
+
+::view-transition-old(app-header),
+::view-transition-old(tab-bar) {
+  display: none;
+}
+
+::view-transition-new(app-header),
+::view-transition-new(tab-bar) {
+  animation: none;
+}
+
+@keyframes page-leave {
+  to {
+    opacity: 0;
+    translate: var(--page-shift);
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    translate: var(--page-shift);
+  }
+}
+
+::view-transition-old(.nav-forward),
+::view-transition-old(.nav-back) {
+  animation: page-leave 0.16s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+::view-transition-new(.nav-forward),
+::view-transition-new(.nav-back) {
+  animation: page-enter 0.36s var(--ease-arrive) 0.04s both;
+}
+
+::view-transition-old(.nav-forward) {
+  --page-shift: -32px;
+}
+
+::view-transition-new(.nav-forward) {
+  --page-shift: 48px;
+}
+
+::view-transition-old(.nav-back) {
+  --page-shift: 32px;
+}
+
+::view-transition-new(.nav-back) {
+  --page-shift: -48px;
+}
+
+/*
  * Less motion means instant changes, not missing ones: every state still
  * lands, it just does not travel. Delays go too, so a staggered entrance
  * cannot leave anything invisible for a beat.
@@ -346,5 +398,12 @@
     animation-duration: 0.01ms !important;
     animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
   }
 }
