@@ -24,6 +24,9 @@ type Slots = [PlayerId | null, PlayerId | null, PlayerId | null, PlayerId | null
 
 const EMPTY: Slots = [null, null, null, null];
 
+/** How long after the pad comes on screen a new game counts as catching up. */
+const CATCH_UP_MS = 3000;
+
 export function SessionBoard({
   sessionId,
   attendees,
@@ -90,10 +93,20 @@ export function SessionBoard({
   // would, so say whose it was -- or the same game gets entered again.
   const seenMatchId = useRef(lastMatchId);
   const [elsewhereId, setElsewhereId] = useState<number | null>(null);
+  // Coming back to this tab shows it from memory and catches up a moment
+  // later (LiveRefresh). A game in that catch-up was logged while you were on
+  // another tab, not "just now", and there was no form to wipe.
+  // ponytail: a time window, not a signal from LiveRefresh; on a network so
+  // slow the catch-up takes longer, the banner shows as it used to.
+  const shownAt = useRef(0);
+  useEffect(() => {
+    shownAt.current = performance.now();
+  }, []);
   useEffect(() => {
     // Ids only grow, so a drop means a deletion, not a new game.
     if (lastMatchId > seenMatchId.current) {
-      setElsewhereId(lastMatchId === justLogged ? null : lastMatchId);
+      const catchingUp = performance.now() - shownAt.current < CATCH_UP_MS;
+      setElsewhereId(lastMatchId === justLogged || catchingUp ? null : lastMatchId);
     }
     seenMatchId.current = lastMatchId;
   }, [lastMatchId, justLogged]);
