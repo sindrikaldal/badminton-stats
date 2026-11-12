@@ -184,6 +184,13 @@ export function reachedDeuce(match: Match): boolean {
   return losingScore(match) >= 10;
 }
 
+/** Win by two is the closest a game can finish, so 11-9 and 14-12 both count. */
+export const CLOSE_MARGIN = 2;
+
+export function isClose(match: Match): boolean {
+  return marginOf(match) <= CLOSE_MARGIN;
+}
+
 export const HONOR_STREAK_LENGTH = 3;
 
 /** A duo must have played this many games together to be ranked as a pair. */

@@ -10,6 +10,7 @@ import {
   didPlay,
   didWin,
   gamesOfKind,
+  isClose,
   isSevenNil,
   losersOf,
   losingScore,
@@ -61,6 +62,8 @@ export type PlayerStats = {
   pointsAgainst: number;
   /** Mean points won by, or lost by. Negative means usually on the wrong end. */
   avgMargin: number;
+  /** Games of theirs, won or lost, that finished as close as a game can. */
+  close: number;
   honors: number;
   bestStreak: number;
   /** Their run at the end of the most recent session they played. */
@@ -121,6 +124,8 @@ export type SeasonRecord = {
 
 export type SeasonStats = {
   totalMatches: number;
+  /** Games that finished as close as a game can -- see isClose. */
+  closeMatches: number;
   totalSessions: number;
   qualifyThreshold: number;
   players: PlayerStats[];
@@ -217,6 +222,7 @@ export function seasonStats(
     let wins = 0;
     let pointsFor = 0;
     let pointsAgainst = 0;
+    let close = 0;
     const deuce: DeuceRecord = { played: 0, wins: 0 };
     const sevenNil: SevenNilRecord = { given: 0, taken: 0 };
 
@@ -228,6 +234,7 @@ export function seasonStats(
       if (won) wins += 1;
       pointsFor += score[0];
       pointsAgainst += score[1];
+      if (isClose(match)) close += 1;
       if (reachedDeuce(match)) {
         deuce.played += 1;
         if (won) deuce.wins += 1;
@@ -249,6 +256,7 @@ export function seasonStats(
       pointsFor,
       pointsAgainst,
       avgMargin: played > 0 ? (pointsFor - pointsAgainst) / played : 0,
+      close,
       honors: honorsByPlayer.get(playerId) ?? 0,
       bestStreak: bestStreak.get(playerId) ?? 0,
       currentStreak: currentStreak.get(playerId) ?? 0,
@@ -266,6 +274,7 @@ export function seasonStats(
 
   return {
     totalMatches,
+    closeMatches: matches.filter(isClose).length,
     totalSessions,
     qualifyThreshold,
     players,
@@ -637,6 +646,55 @@ export function winRateTone(rate: number, played: number): string {
   if (played === 0) return "text-ink-faint";
   if (rate >= 0.5) return "text-win";
   return "text-ink-muted";
+}
+
+/** Evenings averaged into the progress line, so one bad night is a dip, not a cliff. */
+export const PROGRESS_WINDOW = 4;
+/** Evenings played before a line is worth drawing. */
+export const MIN_PROGRESS_NIGHTS = 3;
+
+export type NightForm = {
+  sessionId: number;
+  playedOn: string;
+  played: number;
+  wins: number;
+  /** Points scored per game that evening. */
+  perGame: number;
+  /** Points per game over this and the evenings before it, PROGRESS_WINDOW in all. */
+  trend: number;
+};
+
+/**
+ * A player against themselves, evening by evening: points scored per game,
+ * which rises when you lose closer as well as when you win. The trend pools
+ * the games of the last few evenings rather than averaging their averages, so
+ * a two-game night weighs what two games should.
+ */
+export function progressFor(unordered: Session[], playerId: PlayerId): NightForm[] {
+  const nights = [...unordered]
+    .sort((a, b) => a.playedOn.localeCompare(b.playedOn) || a.id - b.id)
+    .flatMap((session) => {
+      let played = 0;
+      let wins = 0;
+      let points = 0;
+      for (const match of session.matches) {
+        const score = scoreFor(match, playerId);
+        if (!score) continue;
+        played += 1;
+        points += score[0];
+        if (didWin(match, playerId)) wins += 1;
+      }
+      return played > 0
+        ? [{ sessionId: session.id, playedOn: session.playedOn, played, wins, points }]
+        : [];
+    });
+
+  return nights.map(({ points, ...night }, i) => {
+    const window = nights.slice(Math.max(0, i - PROGRESS_WINDOW + 1), i + 1);
+    const games = window.reduce((sum, n) => sum + n.played, 0);
+    const pooled = window.reduce((sum, n) => sum + n.points, 0);
+    return { ...night, perGame: points / night.played, trend: pooled / games };
+  });
 }
 
 /** Matches this player appeared in, newest first. */

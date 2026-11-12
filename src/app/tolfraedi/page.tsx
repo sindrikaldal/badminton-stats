@@ -86,6 +86,10 @@ export default async function StatsPage({
     );
   }
 
+  // A season's tables are sealed until it ends, and all-time includes it.
+  const open = seasons.find((s) => s.endedOn === null);
+  const sealed = !!open && (allTime || season.id === open.id);
+
   const sessionLists = allTime
     ? await Promise.all(seasons.map((s) => repo.getSessions(s.id)))
     : [await repo.getSessions(season.id)];
@@ -130,6 +134,9 @@ export default async function StatsPage({
             </p>
             <p className="text-xs text-ink-faint">
               {stats.totalMatches} leikir skráðir
+              {!sealed && stats.totalMatches > 0
+                ? ` · ${formatPercent(stats.closeMatches / stats.totalMatches)} á 2 stigum`
+                : ""}
             </p>
           </div>
           {/* Once anyone has played 1v1, the two competitions take the corner
@@ -152,26 +159,35 @@ export default async function StatsPage({
         ) : null}
       </div>
 
-      <nav className="mt-4 flex gap-2">
-        {tabs.map((option) => (
-          <Link
-            key={option.key}
-            href={hrefFor({ ...view, flipi: option.key })}
-            className={`display flex-1 rounded-lg py-2.5 text-center text-sm tracking-[0.04em] ${
-              option.key === tab
-                ? "bg-ink text-tape"
-                : "border border-line bg-surface-raised text-ink-muted"
-            }`}
-          >
-            {option.label}
-          </Link>
-        ))}
-      </nav>
+      {sealed ? null : (
+        <nav className="mt-4 flex gap-2">
+          {tabs.map((option) => (
+            <Link
+              key={option.key}
+              href={hrefFor({ ...view, flipi: option.key })}
+              className={`display flex-1 rounded-lg py-2.5 text-center text-sm tracking-[0.04em] ${
+                option.key === tab
+                  ? "bg-ink text-tape"
+                  : "border border-line bg-surface-raised text-ink-muted"
+              }`}
+            >
+              {option.label}
+            </Link>
+          ))}
+        </nav>
+      )}
 
       {stats.totalMatches === 0 ? (
         <div className="mt-4">
           <EmptyState title="Enginn leikur skráður ennþá" />
         </div>
+      ) : sealed ? (
+        <Sealed
+          stats={stats}
+          players={players.filter((p) =>
+            stats.players.some((s) => s.playerId === p.id && s.played > 0),
+          )}
+        />
       ) : tab === "stada" ? (
         <Leaderboard stats={stats} byId={byId} sort={sort} view={view} />
       ) : tab === "por" ? (
@@ -180,6 +196,72 @@ export default async function StatsPage({
         <Records stats={stats} byId={byId} />
       )}
     </Shell>
+  );
+}
+
+// Gold is the shuttle tube's yellow; silver and bronze sit beside it.
+const MEDALS = ["bg-shuttle text-ink", "bg-[#c9d1cb] text-ink", "bg-[#b8743f] text-tape"];
+
+/**
+ * What a running season shows instead of its tables: how close it has been,
+ * and the table under frosted glass. The rows behind the blur hold no
+ * results -- names by alphabet and question marks -- so turning the blur off
+ * gives nothing away.
+ */
+function Sealed({
+  stats,
+  players,
+}: {
+  stats: ReturnType<typeof seasonStats>;
+  /** Everyone who has played this season, in name order. */
+  players: Player[];
+}) {
+  return (
+    <>
+      <div className="card mt-4 p-4">
+        <p className="display tnum text-[2.25rem] leading-none text-ink">
+          {formatPercent(stats.closeMatches / stats.totalMatches)}
+        </p>
+        <p className="mt-1 text-sm text-ink-muted">
+          leikjanna réðust á 2 stigum · {stats.closeMatches} af {stats.totalMatches}
+        </p>
+      </div>
+
+      <div className="relative mt-4">
+        {/* The card stays crisp; only what is inside it is frosted. */}
+        <div className="card overflow-hidden">
+          <ul aria-hidden className="divide-y divide-line blur-sm select-none">
+            {players.map((player, index) => (
+              <li key={player.id} className="flex items-center gap-3 px-3 py-2.5">
+                <span
+                  className={`display flex size-8 shrink-0 items-center justify-center rounded text-lg ${
+                    MEDALS[index] ?? "text-ink-faint"
+                  }`}
+                >
+                  ?
+                </span>
+                <Avatar player={player} />
+                <div className="min-w-0 flex-1">
+                  <p className="display truncate text-lg text-ink">{player.shortName}</p>
+                  <p className="text-xs text-ink-faint">?S–?T · hrina ? · ?% mæting</p>
+                </div>
+                <p className="display shrink-0 text-2xl text-ink-muted">??%</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="absolute inset-0 flex items-start justify-center px-6 pt-10">
+          <div className="rounded bg-ink px-4 py-3 text-center text-tape">
+            <p className="display text-lg tracking-[0.04em]">
+              Opnast í lok tímabils
+            </p>
+            <p className="mt-1 text-xs text-tape/80">
+              Stöðutaflan, bestu pörin og metin. Kvöldin sjálf eru alltaf opin.
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -221,8 +303,6 @@ function Leaderboard({
   const rows = rankedLeaderboard(stats.players, sort.sort).filter(
     (p) => p.played > 0,
   );
-  // Gold is the shuttle tube's yellow; silver and bronze sit beside it.
-  const medals = ["bg-shuttle text-ink", "bg-[#c9d1cb] text-ink", "bg-[#b8743f] text-tape"];
 
   return (
     <>
@@ -267,7 +347,7 @@ function Leaderboard({
               >
                 <span
                   className={`display tnum flex size-8 shrink-0 items-center justify-center rounded text-lg ${
-                    rank && rank <= 3 ? medals[rank - 1] : "text-ink-faint"
+                    rank && rank <= 3 ? MEDALS[rank - 1] : "text-ink-faint"
                   }`}
                 >
                   {rank ?? "–"}
