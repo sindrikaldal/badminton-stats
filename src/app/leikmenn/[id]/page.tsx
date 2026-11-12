@@ -8,19 +8,23 @@ import {
   MIN_DEUCE_GAMES,
   MIN_FADE_SESSIONS,
   MIN_NEMESIS_MEETINGS,
+  MIN_PROGRESS_NIGHTS,
+  PROGRESS_WINDOW,
   chemistryFor,
   formatIcelandicDate,
   formatPercent,
   headToHead,
   nemesisFor,
+  progressFor,
   rankedLeaderboard,
   recentMatchesFor,
   seasonStats,
 } from "@/lib/domain/stats";
 import { pairStreaksInSession } from "@/lib/domain/streaks";
-import { type Player, isSingles } from "@/lib/domain/types";
+import { type Player, gamesOfKind, isSingles } from "@/lib/domain/types";
 import * as repo from "@/lib/repo";
 import { Arrow } from "@/components/Arrow";
+import { ProgressChart } from "@/components/ProgressChart";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +54,11 @@ export default async function PlayerPage({
     (timabil && !allTime ? seasons.find((s) => s.id === Number(timabil)) : null) ??
     seasons.find((s) => s.endedOn === null) ??
     seasons[0];
+
+  // A season's record is sealed until it ends, and all-time includes it.
+  // What stays open compares the player with nobody but themselves.
+  const open = seasons.find((s) => s.endedOn === null);
+  const sealed = !!open && (allTime || season?.id === open.id);
 
   const sessionLists =
     allTime || !season
@@ -89,6 +98,18 @@ export default async function PlayerPage({
 
   const best = chemistry.filter((c) => c.played >= 3)[0];
 
+  const nights = progressFor(
+    sessions.map((s) => gamesOfKind(s, false)),
+    playerId,
+  );
+  // A one-game evening scores 11 on a single win; best needs a real night.
+  const bestNight = nights
+    .filter((n) => n.played >= 3)
+    .reduce<(typeof nights)[number] | null>(
+      (top, n) => (!top || n.perGame > top.perGame ? n : top),
+      null,
+    );
+
   const nemesis = nemesisFor(matches, playerId, regulars);
   const closestRival = Math.max(
     0,
@@ -113,9 +134,10 @@ export default async function PlayerPage({
               {player.isGuest ? "Gestur" : "Fastamaður"}
               {!player.isActive ? " · í geymslu" : ""}
             </p>
-            {(rank >= 0 && mine?.qualified) || (mine && mine.nightsWon > 0) ? (
+            {(!sealed && rank >= 0 && mine?.qualified) ||
+            (mine && mine.nightsWon > 0) ? (
               <p className="mt-2 flex flex-wrap gap-1.5">
-                {rank >= 0 && mine?.qualified ? (
+                {!sealed && rank >= 0 && mine?.qualified ? (
                   <span className="display tnum rounded bg-ink px-2 py-0.5 text-sm tracking-[0.04em] text-tape">
                     #{rank + 1} á stöðutöflunni
                   </span>
@@ -131,12 +153,16 @@ export default async function PlayerPage({
         </div>
 
         {mine && mine.played > 0 ? (
-          <div className="mt-4 grid grid-cols-3 gap-2 border-t border-line pt-4 text-center">
+          <div
+            className={`mt-4 grid gap-2 border-t border-line pt-4 text-center ${sealed ? "grid-cols-2" : "grid-cols-3"}`}
+          >
             <Stat value={String(mine.played)} label="Leikir" />
-            <Stat
-              value={`${mine.avgMargin > 0 ? "+" : ""}${mine.avgMargin.toFixed(1)}`}
-              label="Meðalmunur"
-            />
+            {sealed ? null : (
+              <Stat
+                value={`${mine.avgMargin > 0 ? "+" : ""}${mine.avgMargin.toFixed(1)}`}
+                label="Meðalmunur"
+              />
+            )}
             <Stat
               value={`${mine.sessionsAttended}/${stats.totalSessions}`}
               label="Kvöld"
@@ -181,19 +207,70 @@ export default async function PlayerPage({
 
       {!mine || mine.played === 0 ? null : (
         <>
+          <SectionTitle>Framfarir</SectionTitle>
+          <div className="card p-4">
+            <p className="display text-lg leading-tight text-ink">Stig í leik</p>
+            <p className="mt-0.5 text-xs text-ink-faint">
+              Punktur fyrir hvert kvöld. Línan er meðaltal síðustu{" "}
+              {PROGRESS_WINDOW} kvölda.
+            </p>
+            {nights.length >= MIN_PROGRESS_NIGHTS && bestNight ? (
+              <>
+                <ProgressChart nights={nights} best={bestNight} />
+                <div className="mt-3 flex items-center justify-between gap-4 border-t border-line pt-3">
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-2 display text-lg leading-tight text-ink">
+                      <span
+                        aria-hidden
+                        className="size-2.5 rounded-full border border-ink bg-shuttle"
+                      />
+                      Besta kvöldið
+                    </p>
+                    <p className="mt-0.5 text-xs text-ink-faint">
+                      {/* Games, not a record: the best-scoring night can be a narrow 0–3. */}
+                      {formatIcelandicDate(bestNight.playedOn)} ·{" "}
+                      {bestNight.played} leikir
+                    </p>
+                  </div>
+                  <p className="display tnum shrink-0 text-2xl leading-none text-ink">
+                    {bestNight.perGame.toFixed(1)}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="mt-3 text-sm text-ink-faint">
+                {waiting(
+                  MIN_PROGRESS_NIGHTS - nights.length,
+                  (n) => (n === 1 ? "eitt kvöld" : `${n} kvöld`),
+                )}
+                .
+              </p>
+            )}
+          </div>
+
           <SectionTitle>Tölfræði</SectionTitle>
           <div className="card divide-y divide-line overflow-hidden">
+            {sealed ? null : (
+              <>
+              <Tile
+                label="Sigurhlutfall"
+                value={formatPercent(mine.winRate)}
+                detail={`${mine.wins} sigrar · ${mine.losses} töp`}
+                tone={mine.winRate >= 0.5 ? "win" : "muted"}
+              />
+              <Tile
+                label="Hrina núna"
+                value={String(mine.currentStreak)}
+                detail={`Besta: ${mine.bestStreak} í röð`}
+                tone={mine.currentStreak >= 2 ? "flame" : "muted"}
+              />
+              </>
+            )}
             <Tile
-              label="Sigurhlutfall"
-              value={formatPercent(mine.winRate)}
-              detail={`${mine.wins} sigrar · ${mine.losses} töp`}
-              tone={mine.winRate >= 0.5 ? "win" : "muted"}
-            />
-            <Tile
-              label="Hrina núna"
-              value={String(mine.currentStreak)}
-              detail={`Besta: ${mine.bestStreak} í röð`}
-              tone={mine.currentStreak >= 2 ? "flame" : "muted"}
+              label="Jafnir leikir"
+              value={formatPercent(mine.close / mine.played)}
+              detail={`${mine.close} af ${mine.played} réðust á 2 stigum`}
+              tone="muted"
             />
             <Tile
               label="Þrír í röð"
@@ -207,137 +284,150 @@ export default async function PlayerPage({
               detail={`${mine.sessionsAttended} af ${stats.totalSessions} kvöldum`}
               tone="challenge"
             />
-            <Tile
-              label="7–0"
-              value={`${mine.sevenNil.given}–${mine.sevenNil.taken}`}
-              detail="gefin – fengin"
-              tone={
-                mine.sevenNil.taken > mine.sevenNil.given
-                  ? "flame"
-                  : mine.sevenNil.given > 0
-                    ? "win"
-                    : "muted"
-              }
-            />
-            {mine.deuce.played >= MIN_DEUCE_GAMES ? (
+            {sealed ? null : (
+              <>
               <Tile
-                label="Framlengingar"
-                value={`${mine.deuce.wins}–${mine.deuce.played - mine.deuce.wins}`}
-                detail="leikir sem fóru fram yfir 11"
+                label="7–0"
+                value={`${mine.sevenNil.given}–${mine.sevenNil.taken}`}
+                detail="gefin – fengin"
                 tone={
-                  mine.deuce.wins * 2 >= mine.deuce.played ? "win" : "muted"
-                }
-              />
-            ) : (
-              <Tile
-                compact
-                label="Framlengingar"
-                value="–"
-                detail={waiting(
-                  MIN_DEUCE_GAMES - mine.deuce.played,
-                  (n) => (n === 1 ? "eina framlengingu" : `${n} framlengingar`),
-                )}
-                tone="muted"
-              />
-            )}
-            {mine.fade ? (
-              <Tile
-                compact
-                label={fadeLabel(mine.fade.delta)}
-                value={`${mine.fade.first.wins}–${mine.fade.first.losses} → ${mine.fade.second.wins}–${mine.fade.second.losses}`}
-                detail={`fyrri gegn seinni hluta, ${mine.fade.sessions} kvöld`}
-                tone={
-                  mine.fade.delta < 0
+                  mine.sevenNil.taken > mine.sevenNil.given
                     ? "flame"
-                    : mine.fade.delta > 0
+                    : mine.sevenNil.given > 0
                       ? "win"
                       : "muted"
                 }
               />
-            ) : (
-              <Tile
-                compact
-                label="Kólnaði"
-                value="–"
-                detail={waiting(
-                  MIN_FADE_SESSIONS - mine.fadeSessions,
-                  (n) => `${n} kvöld`,
-                )}
-                tone="muted"
-              />
+              {mine.deuce.played >= MIN_DEUCE_GAMES ? (
+                <Tile
+                  label="Framlengingar"
+                  value={`${mine.deuce.wins}–${mine.deuce.played - mine.deuce.wins}`}
+                  detail="leikir sem fóru fram yfir 11"
+                  tone={
+                    mine.deuce.wins * 2 >= mine.deuce.played ? "win" : "muted"
+                  }
+                />
+              ) : (
+                <Tile
+                  compact
+                  label="Framlengingar"
+                  value="–"
+                  detail={waiting(
+                    MIN_DEUCE_GAMES - mine.deuce.played,
+                    (n) => (n === 1 ? "eina framlengingu" : `${n} framlengingar`),
+                  )}
+                  tone="muted"
+                />
+              )}
+              {mine.fade ? (
+                <Tile
+                  compact
+                  label={fadeLabel(mine.fade.delta)}
+                  value={`${mine.fade.first.wins}–${mine.fade.first.losses} → ${mine.fade.second.wins}–${mine.fade.second.losses}`}
+                  detail={`fyrri gegn seinni hluta, ${mine.fade.sessions} kvöld`}
+                  tone={
+                    mine.fade.delta < 0
+                      ? "flame"
+                      : mine.fade.delta > 0
+                        ? "win"
+                        : "muted"
+                  }
+                />
+              ) : (
+                <Tile
+                  compact
+                  label="Kólnaði"
+                  value="–"
+                  detail={waiting(
+                    MIN_FADE_SESSIONS - mine.fadeSessions,
+                    (n) => `${n} kvöld`,
+                  )}
+                  tone="muted"
+                />
+              )}
+              {mySingles && mySingles.played > 0 ? (
+                <Tile
+                  compact
+                  label="1 á 1"
+                  value={`${mySingles.wins}–${mySingles.losses}`}
+                  detail={`${formatPercent(mySingles.winRate)} · aðskilið frá 2 á 2`}
+                  tone={mySingles.winRate >= 0.5 ? "win" : "muted"}
+                />
+              ) : null}
+              </>
             )}
-            {mySingles && mySingles.played > 0 ? (
-              <Tile
-                compact
-                label="1 á 1"
-                value={`${mySingles.wins}–${mySingles.losses}`}
-                detail={`${formatPercent(mySingles.winRate)} · aðskilið frá 2 á 2`}
-                tone={mySingles.winRate >= 0.5 ? "win" : "muted"}
-              />
-            ) : null}
           </div>
 
-          {best ? (
+          {sealed ? (
+            <p className="mt-3 px-1 text-xs text-ink-faint">
+              Sigurhlutfall, meðspilarar og erkifjandi opnast þegar tímabilinu
+              lýkur.
+            </p>
+          ) : (
             <>
-              <SectionTitle>Besti meðspilari</SectionTitle>
-              <div className="card mark-win flex items-center gap-3 p-4">
-                <Avatar player={byId.get(best.opponent)!} size="lg" />
-                <div className="min-w-0 flex-1">
-                  <p className="display truncate text-lg text-ink">
-                    {byId.get(best.opponent)?.shortName}
-                  </p>
-                  <p className="text-xs text-ink-faint">
-                    {best.played} leikir saman · {best.wins} sigrar
+              {best ? (
+                <>
+                  <SectionTitle>Besti meðspilari</SectionTitle>
+                  <div className="card mark-win flex items-center gap-3 p-4">
+                    <Avatar player={byId.get(best.opponent)!} size="lg" />
+                    <div className="min-w-0 flex-1">
+                      <p className="display truncate text-lg text-ink">
+                        {byId.get(best.opponent)?.shortName}
+                      </p>
+                      <p className="text-xs text-ink-faint">
+                        {best.played} leikir saman · {best.wins} sigrar
+                      </p>
+                    </div>
+                    <p className="display tnum text-2xl text-win">
+                      {formatPercent(best.winRate)}
+                    </p>
+                  </div>
+                </>
+              ) : null}
+
+              <SectionTitle>Erkifjandi</SectionTitle>
+              {nemesis ? (
+                <div className="card mark-flame flex items-center gap-3 p-4">
+                  <Avatar player={byId.get(nemesis.opponent)!} size="lg" />
+                  <div className="min-w-0 flex-1">
+                    <p className="display truncate text-lg text-ink">
+                      {byId.get(nemesis.opponent)?.shortName}
+                    </p>
+                    <p className="text-xs text-ink-faint">
+                      {nemesis.played} viðureignir ·{" "}
+                      {nemesis.played - nemesis.wins} töp
+                    </p>
+                  </div>
+                  <p className="display tnum text-2xl text-flame">
+                    {formatPercent(nemesis.winRate)}
                   </p>
                 </div>
-                <p className="display tnum text-2xl text-win">
-                  {formatPercent(best.winRate)}
-                </p>
-              </div>
-            </>
-          ) : null}
+              ) : (
+                <div className="card p-4">
+                  <p className="text-sm text-ink-faint">
+                    {waiting(MIN_NEMESIS_MEETINGS - closestRival, (n) =>
+                      n === 1 ? "eina viðureign" : `${n} viðureignir`,
+                    )}{" "}
+                    við sama mann.
+                  </p>
+                </div>
+              )}
 
-          <SectionTitle>Erkifjandi</SectionTitle>
-          {nemesis ? (
-            <div className="card mark-flame flex items-center gap-3 p-4">
-              <Avatar player={byId.get(nemesis.opponent)!} size="lg" />
-              <div className="min-w-0 flex-1">
-                <p className="display truncate text-lg text-ink">
-                  {byId.get(nemesis.opponent)?.shortName}
-                </p>
-                <p className="text-xs text-ink-faint">
-                  {nemesis.played} viðureignir ·{" "}
-                  {nemesis.played - nemesis.wins} töp
-                </p>
-              </div>
-              <p className="display tnum text-2xl text-flame">
-                {formatPercent(nemesis.winRate)}
-              </p>
-            </div>
-          ) : (
-            <div className="card p-4">
-              <p className="text-sm text-ink-faint">
-                {waiting(MIN_NEMESIS_MEETINGS - closestRival, (n) =>
-                  n === 1 ? "eina viðureign" : `${n} viðureignir`,
-                )}{" "}
-                við sama mann.
-              </p>
-            </div>
+              {chemistry.length > 1 ? (
+                <>
+                  <SectionTitle>Með hverjum</SectionTitle>
+                  <BarList rows={chemistry} byId={byId} tone="win" />
+                </>
+              ) : null}
+
+              {h2h.length > 0 ? (
+                <>
+                  <SectionTitle>Innbyrðis árangur</SectionTitle>
+                  <BarList rows={h2h} byId={byId} tone="challenge" />
+                </>
+              ) : null}
+            </>
           )}
-
-          {chemistry.length > 1 ? (
-            <>
-              <SectionTitle>Með hverjum</SectionTitle>
-              <BarList rows={chemistry} byId={byId} tone="win" />
-            </>
-          ) : null}
-
-          {h2h.length > 0 ? (
-            <>
-              <SectionTitle>Innbyrðis árangur</SectionTitle>
-              <BarList rows={h2h} byId={byId} tone="challenge" />
-            </>
-          ) : null}
 
           <SectionTitle>Nýlegir leikir</SectionTitle>
           <MatchList

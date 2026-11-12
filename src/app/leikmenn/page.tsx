@@ -4,12 +4,7 @@ import { AddPlayerInline } from "@/components/AddPlayerInline";
 import { MeProvider } from "@/components/Me";
 import { MeSwitcher } from "@/components/MeSwitcher";
 import { EmptyState, SectionTitle, Shell } from "@/components/Shell";
-import {
-  formatPercent,
-  rankedLeaderboard,
-  seasonStats,
-  winRateTone,
-} from "@/lib/domain/stats";
+import { seasonStats } from "@/lib/domain/stats";
 import * as repo from "@/lib/repo";
 
 export const dynamic = "force-dynamic";
@@ -26,18 +21,12 @@ export default async function PlayersPage() {
     players.map((p) => p.id),
   );
   const statsById = new Map(stats.players.map((s) => [s.playerId, s]));
-  const ordered = rankedLeaderboard(stats.players);
 
-  const byId = new Map(players.map((p) => [p.id, p]));
-  const inGroup = (test: (player: (typeof players)[number]) => boolean) =>
-    ordered.flatMap((row) => {
-      const player = byId.get(row.playerId);
-      return player && test(player) ? [{ row, player }] : [];
-    });
-
-  const regulars = inGroup((p) => p.isActive && !p.isGuest);
-  const guests = inGroup((p) => p.isActive && p.isGuest);
-  const archived = inGroup((p) => !p.isActive);
+  // By name (as getPlayers orders them), not by record: the running season's
+  // ranking stays sealed until it ends.
+  const regulars = players.filter((p) => p.isActive && !p.isGuest);
+  const guests = players.filter((p) => p.isActive && p.isGuest);
+  const archived = players.filter((p) => !p.isActive);
 
   return (
     <Shell status={season?.name}>
@@ -50,11 +39,11 @@ export default async function PlayersPage() {
           </EmptyState>
         ) : (
           <ul className="card divide-y divide-line overflow-hidden">
-            {regulars.map(({ row, player }) => (
+            {regulars.map((player) => (
               <PlayerRow
-                key={row.playerId}
+                key={player.id}
                 player={player}
-                stats={statsById.get(row.playerId)}
+                stats={statsById.get(player.id)}
               />
             ))}
           </ul>
@@ -64,11 +53,11 @@ export default async function PlayersPage() {
           <>
             <SectionTitle>Gestir</SectionTitle>
             <ul className="card divide-y divide-line overflow-hidden">
-              {guests.map(({ row, player }) => (
+              {guests.map((player) => (
                 <PlayerRow
-                  key={row.playerId}
+                  key={player.id}
                   player={player}
-                  stats={statsById.get(row.playerId)}
+                  stats={statsById.get(player.id)}
                 />
               ))}
             </ul>
@@ -82,11 +71,11 @@ export default async function PlayersPage() {
               Birtast ekki þegar þú velur leikmenn. Úrslitin þeirra standa.
             </p>
             <ul className="card divide-y divide-line overflow-hidden opacity-60">
-              {archived.map(({ row, player }) => (
+              {archived.map((player) => (
                 <PlayerRow
-                  key={row.playerId}
+                  key={player.id}
                   player={player}
-                  stats={statsById.get(row.playerId)}
+                  stats={statsById.get(player.id)}
                 />
               ))}
             </ul>
@@ -109,7 +98,7 @@ function PlayerRow({
   stats,
 }: {
   player: { id: number; name: string; shortName: string; initials: string };
-  stats?: { played: number; wins: number; losses: number; winRate: number; honors: number };
+  stats?: { played: number; honors: number };
 }) {
   return (
     <li>
@@ -119,17 +108,10 @@ function PlayerRow({
           <p className="display truncate text-lg text-ink">{player.name}</p>
           <p className="text-xs text-ink-faint">
             {stats && stats.played > 0
-              ? `${stats.wins}S – ${stats.losses}T${stats.honors > 0 ? ` · ${stats.honors}× 3 í röð` : ""}`
+              ? `${stats.played} leikir á tímabilinu${stats.honors > 0 ? ` · ${stats.honors}× 3 í röð` : ""}`
               : "Engir leikir á tímabilinu"}
           </p>
         </div>
-        {stats && stats.played > 0 ? (
-          <span
-            className={`display tnum shrink-0 text-xl ${winRateTone(stats.winRate, stats.played)}`}
-          >
-            {formatPercent(stats.winRate)}
-          </span>
-        ) : null}
       </Link>
     </li>
   );

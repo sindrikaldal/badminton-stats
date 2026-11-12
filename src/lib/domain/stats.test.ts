@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { nemesisFor, rankedLeaderboard, seasonStats } from "./stats";
+import { nemesisFor, progressFor, rankedLeaderboard, seasonStats } from "./stats";
 import { nightStats } from "./night";
 import { type Match, type PlayerId, type Session, type Team, gamesOfKind } from "./types";
 
@@ -475,5 +475,44 @@ describe("1v1 games", () => {
     expect(tonight.matches).toBe(3);
     expect(tonight.playerOfTheNight).toEqual([KARI]);
     expect(tonight.pairOfTheNight).toBeNull();
+  });
+});
+
+describe("close games", () => {
+  it("counts win-by-two finishes, deuce included, and nothing wider", () => {
+    const sessions = [
+      session(1, "2026-01-07", [
+        won([KARI, ARNAR], [BIRKIR, GISLI], 11, 9),
+        won([BIRKIR, GISLI], [KARI, ARNAR], 14, 12),
+        won([KARI, ARNAR], [BIRKIR, GISLI], 11, 8),
+      ]),
+    ];
+    const stats = seasonStats(sessions, ROSTER);
+    expect(stats.closeMatches).toBe(2);
+    expect(stats.players.find((p) => p.playerId === KARI)?.close).toBe(2);
+  });
+});
+
+describe("progress", () => {
+  it("goes evening by evening, oldest first, pooling games into the trend", () => {
+    const progress = progressFor(
+      [
+        // Arrives out of order, as the all-time view hands it over.
+        session(3, "2026-01-21", [won([BIRKIR, GISLI], [KARI, ARNAR], 11, 9)]),
+        session(1, "2026-01-07", [
+          won([BIRKIR, GISLI], [KARI, ARNAR], 11, 5),
+          won([BIRKIR, GISLI], [KARI, ARNAR], 11, 7),
+        ]),
+        session(2, "2026-01-14", [won([DAVID, STEFAN], [BIRKIR, GISLI])]),
+      ],
+      KARI,
+    );
+
+    // The evening Kári sat out is left out, not drawn as a zero.
+    expect(progress.map((n) => n.sessionId)).toEqual([1, 3]);
+    expect(progress[0].perGame).toBe(6);
+    expect(progress[1].perGame).toBe(9);
+    // (5 + 7 + 9) / 3 games, not the mean of 6 and 9.
+    expect(progress[1].trend).toBe(7);
   });
 });
